@@ -90,7 +90,7 @@ const Home = () => {
 
     return (
         <AppLayout>
-            <div className="p-6 max-w-7xl mx-auto">
+            <div className="space-y-6 mx-auto">
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard
