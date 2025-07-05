@@ -1,290 +1,241 @@
 import React, { useState, useEffect } from "react";
+import { ChefHat, Sparkles, MessageCircle, Clock, Users } from "lucide-react";
 import { AppLayout } from "@/components/Layout/AppLayout";
-import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChefHat, Clock, Users, MessageCircle, Sparkles } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Recipe } from "@/types";
+import { RecipeChat } from "../components/RecipeChat";
 
 const Recipes = () => {
-    const [recipes, setRecipes] = useState<Recipe[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [hasGenerated, setHasGenerated] = useState(false);
+    const [chats, setChats] = useState<Recipe[]>([]); // Stores history of created recipe chats
+    const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null); // Currently selected chat session
 
+    // TODO: Replace with actual API call to fetch saved recipe chats from backend
     useEffect(() => {
-        // Check if recipes were previously generated
-        fetchExistingRecipes();
+        const mockRecipes: Recipe[] = [
+            {
+                id: "1",
+                name: "Spaghetti Bolognese",
+                description: "Hearty tomato-based pasta with minced beef",
+                cookTime: 45,
+                servings: 4,
+                ingredients: [
+                    { name: "pasta", available: true },
+                    { name: "minced beef", available: true },
+                    { name: "tomato sauce", available: true },
+                    { name: "onions", available: false },
+                    { name: "garlic", available: false },
+                ],
+                matchedIngredients: 3,
+                totalIngredients: 5,
+                instructions: [
+                    "Boil water and cook pasta until al dente.",
+                    "Sauté onions and garlic until fragrant.",
+                    "Add minced beef and cook until browned.",
+                    "Stir in tomato sauce and simmer.",
+                    "Combine sauce with drained pasta and serve hot.",
+                ],
+            },
+            {
+                id: "2",
+                name: "Avocado Toast",
+                description: "Quick breakfast with smashed avocado and lemon",
+                cookTime: 10,
+                servings: 2,
+                ingredients: [
+                    { name: "bread", available: true },
+                    { name: "avocado", available: true },
+                    { name: "lemon juice", available: false },
+                    { name: "salt", available: false },
+                ],
+                matchedIngredients: 2,
+                totalIngredients: 4,
+                instructions: [
+                    "Toast the bread slices to your desired crispness.",
+                    "Mash the avocado with lemon juice and salt.",
+                    "Spread the avocado mix on the toast.",
+                    "Serve immediately for best taste.",
+                ],
+            },
+        ];
+        setChats(mockRecipes);
     }, []);
 
-    const fetchExistingRecipes = async () => {
-        try {
-            // TODO: API Call to GET /recipes/recommendations endpoint
-            console.log("API Call: GET /recipes/recommendations");
+    // Handles creating a new blank recipe chat
+    const handleStartNewChat = () => {
+        const newRecipe: Recipe = {
+            id: Date.now().toString(), // Temporary unique ID
+            name: "Untitled Recipe",
+            description: "",
+            cookTime: 0,
+            servings: 1,
+            ingredients: [],
+            matchedIngredients: 0,
+            totalIngredients: 0,
+            instructions: [],
+        };
 
-            // Mock check for existing recipes
-            const hasExisting = false; // Replace with actual API response
-            setHasGenerated(hasExisting);
-        } catch (error) {
-            console.error("Failed to check existing recipes:", error);
-        }
+        setChats([...chats, newRecipe]);
+        setSelectedRecipe(newRecipe);
     };
 
-    const generateRecipes = async () => {
-        setIsGenerating(true);
-        try {
-            // TODO: API Call to POST /recipes/generate endpoint
-            console.log("API Call: POST /recipes/generate");
-
-            // Mock recipe generation - replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API delay
-
-            const mockRecipes: Recipe[] = [
-                {
-                    id: "1",
-                    name: "Banana Bread",
-                    description:
-                        "Delicious homemade banana bread using your ripe bananas",
-                    cookTime: 60,
-                    servings: 8,
-                    ingredients: [
-                        "bananas",
-                        "flour",
-                        "sugar",
-                        "eggs",
-                        "butter",
-                    ],
-                    matchedIngredients: 2,
-                    totalIngredients: 5,
-                    instructions: [
-                        "Preheat oven to 350°F",
-                        "Mash bananas in a bowl",
-                        "Mix dry ingredients",
-                        "Combine wet and dry ingredients",
-                        "Bake for 60 minutes",
-                    ],
-                },
-                {
-                    id: "2",
-                    name: "Fresh Fruit Smoothie",
-                    description:
-                        "Healthy smoothie with your fresh fruits and yogurt",
-                    cookTime: 5,
-                    servings: 2,
-                    ingredients: ["bananas", "yogurt", "milk", "honey"],
-                    matchedIngredients: 3,
-                    totalIngredients: 4,
-                    instructions: [
-                        "Add all ingredients to blender",
-                        "Blend until smooth",
-                        "Serve immediately",
-                    ],
-                },
-                {
-                    id: "3",
-                    name: "Milk-Based Pancakes",
-                    description: "Fluffy pancakes perfect for breakfast",
-                    cookTime: 20,
-                    servings: 4,
-                    ingredients: [
-                        "milk",
-                        "flour",
-                        "eggs",
-                        "sugar",
-                        "baking powder",
-                    ],
-                    matchedIngredients: 2,
-                    totalIngredients: 5,
-                    instructions: [
-                        "Mix dry ingredients",
-                        "Whisk milk and eggs",
-                        "Combine mixtures",
-                        "Cook on griddle",
-                        "Serve hot",
-                    ],
-                },
-            ];
-
-            setRecipes(mockRecipes);
-            setHasGenerated(true);
-
-            toast({
-                title: "Recipes Generated! 🍽️",
-                description: `Found ${mockRecipes.length} recipe suggestions based on your pantry`,
-            });
-        } catch (error) {
-            console.error("Failed to generate recipes:", error);
-            toast({
-                title: "Error",
-                description: "Failed to generate recipes. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsGenerating(false);
-        }
+    // Opens existing chat again if needed
+    const handleResumeChat = (recipe: Recipe) => {
+        setSelectedRecipe(recipe);
     };
 
-    const handleChatAndCustomize = (recipe: Recipe) => {
-        // TODO: API Call to POST /chat/recipe-context endpoint
-        console.log("API Call: POST /chat/recipe-context", {
-            recipeId: recipe.id,
-        });
-
-        toast({
-            title: "AI Chat Coming Soon",
-            description: "Recipe customization chat will be available soon!",
-        });
+    // Returns badge color based on ingredient match percentage
+    const getAvailabilityColor = (matched: number, total: number): string => {
+        const percentage = total === 0 ? 0 : (matched / total) * 100;
+        if (percentage === 100) return "bg-green-100 text-green-800";
+        if (percentage >= 70) return "bg-yellow-100 text-yellow-800";
+        return "bg-orange-100 text-orange-800";
     };
+
+    // Conditional rendering for chat interface
+    if (selectedRecipe) {
+        return (
+            <AppLayout>
+                <RecipeChat
+                    recipe={selectedRecipe}
+                    onBack={() => setSelectedRecipe(null)} // Exit chat
+                />
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout>
-            <div className="space-y-6 mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        Recipe Recommendations 🍽️
-                    </h1>
-                    <p className="text-gray-600 mt-2">
-                        Get personalized recipes based on your pantry items
-                    </p>
-                </div>
-
-                {!hasGenerated ? (
-                    /* Empty State */
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-6">👨‍🍳</div>
-                        <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                            Ready to Cook Something Amazing?
-                        </h3>
-                        <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                            Let our AI chef analyze your pantry and suggest
-                            delicious recipes you can make right now!
+            {chats.length === 0 ? (
+                // Vertically centered empty state CTA
+                <div className="flex items-center justify-center min-h-[80vh] text-center px-4">
+                    <div className="space-y-6 max-w-md">
+                        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                            <ChefHat className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            Let’s cook something delicious!
+                        </h2>
+                        <p className="text-gray-600">
+                            You haven’t created any recipe chats yet. Tap the
+                            button below to start chatting with our AI chef.
                         </p>
                         <Button
-                            onClick={generateRecipes}
-                            disabled={isGenerating}
-                            className="bg-green-600 hover:bg-green-700 text-lg px-8 py-6 h-auto"
+                            onClick={handleStartNewChat}
+                            className="bg-green-600 hover:bg-green-700 text-white"
                         >
-                            {isGenerating ? (
-                                <>
-                                    <Sparkles className="mr-2 h-5 w-5 animate-spin" />
-                                    Generating Recipes...
-                                </>
-                            ) : (
-                                <>
-                                    <ChefHat className="mr-2 h-5 w-5" />
-                                    Generate Recipes
-                                </>
-                            )}
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Start New Recipe Chat
                         </Button>
                     </div>
-                ) : (
-                    /* Recipes List */
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <p className="text-gray-600">
-                                Found {recipes.length} recipe
-                                {recipes.length !== 1 ? "s" : ""} based on your
-                                pantry
-                            </p>
-                            <Button
-                                onClick={generateRecipes}
-                                disabled={isGenerating}
-                                variant="outline"
-                                className="flex items-center gap-2"
-                            >
-                                <Sparkles size={16} />
-                                {isGenerating
-                                    ? "Generating..."
-                                    : "Refresh Recipes"}
-                            </Button>
+                </div>
+            ) : (
+                <div className="space-y-6 mx-auto max-w-6xl px-4">
+                    {/* Header Section */}
+                    <div className="text-center">
+                        <div className="flex items-center justify-center space-x-3 mb-4">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <ChefHat className="w-6 h-6 text-green-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                Recipe Recommendations
+                            </h2>
                         </div>
+                        <p className="text-gray-600 mb-6">
+                            Start a chat to get personalized recipes based on
+                            your pantry ingredients.
+                        </p>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {recipes.map((recipe) => (
-                                <Card
-                                    key={recipe.id}
-                                    className="hover:shadow-lg transition-shadow"
-                                >
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center justify-between">
-                                            <span className="text-lg">
-                                                {recipe.name}
-                                            </span>
-                                            <Badge
-                                                variant="secondary"
-                                                className="bg-green-100 text-green-700"
-                                            >
-                                                {recipe.matchedIngredients}/
-                                                {recipe.totalIngredients}{" "}
-                                                matched
-                                            </Badge>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-gray-600 mb-4">
-                                            {recipe.description}
-                                        </p>
-
-                                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                                            <div className="flex items-center gap-1">
-                                                <Clock size={16} />
-                                                <span>
-                                                    {recipe.cookTime} min
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Users size={16} />
-                                                <span>
-                                                    {recipe.servings} servings
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <p className="font-medium text-sm mb-2">
-                                                Required Ingredients:
-                                            </p>
-                                            <div className="flex flex-wrap gap-1">
-                                                {recipe.ingredients.map(
-                                                    (ingredient, index) => (
-                                                        <Badge
-                                                            key={index}
-                                                            variant={
-                                                                index <
-                                                                recipe.matchedIngredients
-                                                                    ? "default"
-                                                                    : "outline"
-                                                            }
-                                                            className={
-                                                                index <
-                                                                recipe.matchedIngredients
-                                                                    ? "bg-green-100 text-green-700"
-                                                                    : ""
-                                                            }
-                                                        >
-                                                            {ingredient}
-                                                        </Badge>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <Button
-                                            onClick={() =>
-                                                handleChatAndCustomize(recipe)
-                                            }
-                                            className="w-full bg-blue-600 hover:bg-blue-700"
-                                        >
-                                            <MessageCircle className="mr-2 h-4 w-4" />
-                                            Chat & Customize
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                        <Button
+                            onClick={handleStartNewChat}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Start New Recipe Chat
+                        </Button>
                     </div>
-                )}
-            </div>
+
+                    {/* Previously created chats */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {chats.map((recipe) => (
+                            <Card
+                                key={recipe.id}
+                                className="hover:shadow-md border border-gray-200 transition-shadow duration-200 cursor-pointer group"
+                                onClick={() => handleResumeChat(recipe)}
+                            >
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-start justify-between">
+                                        <CardTitle className="text-lg leading-tight group-hover:text-green-600 transition-colors">
+                                            {recipe.name || "Untitled Recipe"}
+                                        </CardTitle>
+                                        <Badge
+                                            className={getAvailabilityColor(
+                                                recipe.matchedIngredients,
+                                                recipe.totalIngredients
+                                            )}
+                                        >
+                                            {recipe.matchedIngredients}/
+                                            {recipe.totalIngredients}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-sm text-gray-600">
+                                        {recipe.description ||
+                                            "No description yet. Click to continue..."}
+                                    </p>
+                                </CardHeader>
+
+                                <CardContent className="space-y-4">
+                                    {/* Meta Info */}
+                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                        <div className="flex items-center space-x-1">
+                                            <Clock className="w-4 h-4" />
+                                            <span>{recipe.cookTime} min</span>
+                                        </div>
+                                        <div className="flex items-center space-x-1">
+                                            <Users className="w-4 h-4" />
+                                            <span>
+                                                {recipe.servings} servings
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Ingredients */}
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700 mb-2">
+                                            Ingredients needed:
+                                        </p>
+                                        <div className="flex flex-wrap gap-1">
+                                            {recipe.ingredients.map(
+                                                (ingredient, idx) => (
+                                                    <Badge
+                                                        key={idx}
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                    >
+                                                        {ingredient.name}
+                                                    </Badge>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleResumeChat(recipe);
+                                        }}
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                        <MessageCircle className="w-4 h-4 mr-2" />
+                                        Chat & Customise
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 };
