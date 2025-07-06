@@ -49,8 +49,8 @@ const Deals = () => {
                 {
                     id: "1",
                     name: "Organic Milk 1L",
-                    image: "/placeholder.svg",
-                    expiryDate: "2024-06-25",
+                    image: "/deals/milk.png",
+                    expiryDate: "2025-10-25",
                     originalPrice: 4.99,
                     discountedPrice: 2.49,
                     retailer: {
@@ -62,8 +62,8 @@ const Deals = () => {
                 {
                     id: "2",
                     name: "Banana Bundle (6 pcs)",
-                    image: "/placeholder.svg",
-                    expiryDate: "2024-06-24",
+                    image: "/deals/banana.png",
+                    expiryDate: "2025-10-24",
                     originalPrice: 3.99,
                     discountedPrice: 1.99,
                     retailer: {
@@ -75,8 +75,8 @@ const Deals = () => {
                 {
                     id: "3",
                     name: "Whole Wheat Bread",
-                    image: "/placeholder.svg",
-                    expiryDate: "2024-06-26",
+                    image: "/deals/bread.png",
+                    expiryDate: "2025-10-26",
                     originalPrice: 2.99,
                     discountedPrice: 1.49,
                     retailer: {
@@ -88,8 +88,8 @@ const Deals = () => {
                 {
                     id: "4",
                     name: "Greek Yogurt 4-pack",
-                    image: "/placeholder.svg",
-                    expiryDate: "2024-06-27",
+                    image: "/deals/yogurt.png",
+                    expiryDate: "2025-10-27",
                     originalPrice: 6.99,
                     discountedPrice: 3.99,
                     retailer: {
@@ -271,8 +271,12 @@ const Deals = () => {
                                         </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-                                            <span className="text-4xl">📦</span>
+                                        <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                                            <img
+                                                src={deal.image}
+                                                alt={deal.name}
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
 
                                         <div className="space-y-3">
