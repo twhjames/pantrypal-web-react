@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Recipe } from "@/types"; // Assuming your types file is at src/types/index.ts
+import type { Recipe } from "@/types";
 
 interface RecipeChatProps {
     recipe: Recipe;

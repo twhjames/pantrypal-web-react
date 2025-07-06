@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
-import { ExpiringDeal } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { MapPin, Calendar, Tag, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import type { ExpiringDeal } from "@/types";
 
 const Deals = () => {
     const [deals, setDeals] = useState<ExpiringDeal[]>([]);
@@ -195,7 +195,7 @@ const Deals = () => {
 
     return (
         <AppLayout>
-            <div className="space-y-6 mx-auto">
+            <div className="pt-2 space-y-6 mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Expiring Deals 🛒
@@ -330,7 +330,7 @@ const Deals = () => {
                                                 onClick={() =>
                                                     handleViewOffer(deal)
                                                 }
-                                                className="w-full bg-orange-600 hover:bg-orange-700"
+                                                className="w-full bg-green-600 hover:bg-green-700"
                                             >
                                                 <ExternalLink className="mr-2 h-4 w-4" />
                                                 View Offer

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/Layout/AppLayout";
-import { StatCard } from "@/components/UI/StatCard";
-import { Package, AlertTriangle, Clock, X, Activity } from "lucide-react";
-import { PantryItem } from "@/types";
+import { StatCard } from "@/components/Pantry/StatCard";
+import { Package, AlertTriangle, Clock, X, ChefHat } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { PantryItem } from "@/types";
 
 const Home = () => {
+    const navigate = useNavigate();
     const [pantryStats, setPantryStats] = useState({
         total: 0,
         expiringSoon: 0,
@@ -13,13 +15,14 @@ const Home = () => {
         expired: 0,
     });
     const [expiringItems, setExpiringItems] = useState<PantryItem[]>([]);
-    const [recentActivity, setRecentActivity] = useState<string[]>([]);
+    const [recipeSuggestions, setRecipeSuggestions] = useState<string[]>([]);
+    const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
 
     useEffect(() => {
         // TODO: Replace with actual API calls to PantryPal backend
         fetchPantryStats();
         fetchExpiringItems();
-        fetchRecentActivity();
+        fetchRecipeSuggestions();
     }, []);
 
     const fetchPantryStats = async () => {
@@ -71,26 +74,48 @@ const Home = () => {
         }
     };
 
-    const fetchRecentActivity = async () => {
+    const fetchRecipeSuggestions = async () => {
+        setIsLoadingRecipes(true);
         try {
-            // TODO: API Call to GET /user/activity endpoint
-            console.log("API Call: GET /user/activity");
+            // TODO: API Call to POST /chatbot/recommend endpoint
+            console.log("API Call: POST /chatbot/recommend");
 
             // Mock data - replace with actual API call
-            setRecentActivity([
-                "Added 3 new items to pantry",
-                "Generated 5 recipe recommendations",
-                "Updated expiry date for Yogurt",
-                "Marked expired items for disposal",
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+            setRecipeSuggestions([
+                "Quick Vegetable Stir-Fry with expiring vegetables",
+                "Banana Bread using overripe bananas",
+                "Creamy Milk-based Soup before it expires",
+                "Fresh Fruit Smoothie with expiring fruits",
             ]);
         } catch (error) {
-            console.error("Failed to fetch recent activity:", error);
+            console.error("Failed to fetch recipe suggestions:", error);
+        } finally {
+            setIsLoadingRecipes(false);
         }
+    };
+
+    const handleRecipeSuggestionClick = (suggestion: string) => {
+        // Navigate to recipes page with the suggestion as initial chat context
+        navigate("/recipes", {
+            state: {
+                startNewChatWithSuggestion: suggestion,
+            },
+        });
     };
 
     return (
         <AppLayout>
-            <div className="space-y-6 mx-auto">
+            <div className="pt-2 space-y-6 mx-auto">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        Welcome back! 👋
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                        Here's what's happening in your pantry today
+                    </p>
+                </div>
+
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard
@@ -98,14 +123,13 @@ const Home = () => {
                         value={pantryStats.total}
                         icon={Package}
                         color="blue"
-                        description="In your pantry"
                     />
                     <StatCard
                         title="Expiring Soon"
                         value={pantryStats.expiringSoon}
                         icon={Clock}
                         color="orange"
-                        description="Next 3 days"
+                        description="Within 3 days"
                     />
                     <StatCard
                         title="Expiring Today"
@@ -119,7 +143,7 @@ const Home = () => {
                         value={pantryStats.expired}
                         icon={X}
                         color="red"
-                        description="Should be discarded"
+                        description="Need attention"
                     />
                 </div>
 
@@ -182,28 +206,59 @@ const Home = () => {
                         </CardContent>
                     </Card>
 
-                    {/* Recent Activity */}
+                    {/* Recipe Suggestions */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Activity className="text-blue-500" size={20} />
-                                Recent Activity
+                                <ChefHat className="text-green-500" size={20} />
+                                Recipe Suggestions
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-3">
-                                {recentActivity.map((activity, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                                    >
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <p className="text-sm text-gray-700">
-                                            {activity}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
+                            {isLoadingRecipes ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg animate-pulse"
+                                        >
+                                            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                            <div className="h-4 bg-gray-300 rounded flex-1"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : recipeSuggestions.length > 0 ? (
+                                <div className="space-y-3">
+                                    {recipeSuggestions.map(
+                                        (suggestion, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors cursor-pointer"
+                                                onClick={() =>
+                                                    handleRecipeSuggestionClick(
+                                                        suggestion
+                                                    )
+                                                }
+                                            >
+                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                <p className="text-sm text-gray-700">
+                                                    {suggestion}
+                                                </p>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <div className="text-4xl mb-2">🍽️</div>
+                                    <p className="text-gray-600">
+                                        No recipe suggestions available.
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        Add more items to your pantry!
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

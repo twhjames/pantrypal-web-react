@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
-import { PantryItemCard } from "@/components/UI/PantryItemCard";
-import { PantryItem } from "@/types";
+import { PantryItemCard } from "@/components/Pantry/PantryItemCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Camera } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import type { PantryItem } from "@/types";
 
 const Pantry = () => {
     const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
@@ -189,10 +189,11 @@ const Pantry = () => {
                 itemForm
             );
 
-            const updatedItems = pantryItems.map((item) =>
-                item.id === editingItem.id
-                    ? { ...item, ...itemForm, status: "fresh" }
-                    : item
+            const updatedItems = pantryItems.map(
+                (item): PantryItem =>
+                    item.id === editingItem.id
+                        ? { ...item, ...itemForm, status: "fresh" }
+                        : item
             );
 
             setPantryItems(updatedItems);
@@ -252,7 +253,7 @@ const Pantry = () => {
 
     return (
         <AppLayout>
-            <div className="space-y-6 mx-auto">
+            <div className="pt-2 space-y-6 mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         My Pantry 🧺

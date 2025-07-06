@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ChefHat, Sparkles, MessageCircle, Clock, Users } from "lucide-react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Recipe } from "@/types";
-import { RecipeChat } from "../components/RecipeChat";
+import { RecipeChat } from "@/components/Pantry/RecipeChat";
+import type { Recipe } from "@/types";
 
 const Recipes = () => {
+    const location = useLocation();
     const [chats, setChats] = useState<Recipe[]>([]); // Stores history of created recipe chats
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null); // Currently selected chat session
 
@@ -62,12 +64,22 @@ const Recipes = () => {
         setChats(mockRecipes);
     }, []);
 
-    // Handles creating a new blank recipe chat
-    const handleStartNewChat = () => {
+    // Handle navigation from Home page with recipe suggestion
+    useEffect(() => {
+        const state = location.state as { startNewChatWithSuggestion?: string };
+        if (state?.startNewChatWithSuggestion) {
+            handleStartNewChat(state.startNewChatWithSuggestion);
+            // Clear the location state to prevent re-triggering
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
+
+    // Handles creating a new blank recipe chat or with suggestion
+    const handleStartNewChat = (suggestion?: string) => {
         const newRecipe: Recipe = {
             id: Date.now().toString(), // Temporary unique ID
-            name: "Untitled Recipe",
-            description: "",
+            name: suggestion || "Untitled Recipe",
+            description: suggestion ? `Recipe based on: ${suggestion}` : "",
             cookTime: 0,
             servings: 1,
             ingredients: [],
@@ -110,19 +122,19 @@ const Recipes = () => {
             {chats.length === 0 ? (
                 // Vertically centered empty state CTA
                 <div className="flex items-center justify-center min-h-[80vh] text-center px-4">
-                    <div className="space-y-6 max-w-md">
+                    <div className="pt-2 space-y-6 mx-auto">
                         <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
                             <ChefHat className="w-8 h-8 text-green-600" />
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900">
-                            Let’s cook something delicious!
+                            Let's cook something delicious!
                         </h2>
                         <p className="text-gray-600">
-                            You haven’t created any recipe chats yet. Tap the
+                            You haven't created any recipe chats yet. Tap the
                             button below to start chatting with our AI chef.
                         </p>
                         <Button
-                            onClick={handleStartNewChat}
+                            onClick={() => handleStartNewChat()}
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
@@ -131,7 +143,7 @@ const Recipes = () => {
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6 mx-auto max-w-6xl px-4">
+                <div className="pt-2 space-y-6 mx-auto">
                     {/* Header Section */}
                     <div className="text-center">
                         <div className="flex items-center justify-center space-x-3 mb-4">
@@ -148,7 +160,7 @@ const Recipes = () => {
                         </p>
 
                         <Button
-                            onClick={handleStartNewChat}
+                            onClick={() => handleStartNewChat()}
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
