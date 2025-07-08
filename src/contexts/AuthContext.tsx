@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { AuthState } from "@/types";
+import {
+    loginAccount,
+    registerAccount,
+    updateAccountProfile,
+} from "@/api/account";
 
 interface AuthContextType extends AuthState {
     login: (email: string, password: string) => Promise<void>;
@@ -49,39 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     }, []);
 
-    const API_BASE_URL = import.meta.env.PANTRYPAL_API_BASE_URL || "";
-
     const login = async (email: string, password: string) => {
         try {
-            // Mock response
-            // const mockResponse = {
-            //     token: "mock-jwt-token-12345",
-            //     user: {
-            //         id: "1",
-            //         email,
-            //         name: "Demo User",
-            //     },
-            // };
-            // localStorage.setItem("pantrypal_token", mockResponse.token);
-            // localStorage.setItem(
-            //     "pantrypal_user",
-            //     JSON.stringify(mockResponse.user)
-            // );
-
-            const response = await fetch(`${API_BASE_URL}/account/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Login failed");
-            }
-
-            const data = await response.json();
-
+            const data = await loginAccount(email, password);
             const tokenValue = data.token;
             const userId = data.user_id;
 
@@ -107,18 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         username: string
     ) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/account/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password, username }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Registration failed");
-            }
-            await response.json();
+            await registerAccount(email, password, username);
         } catch (error) {
             console.error("Registration failed:", error);
             throw new Error("Registration failed");
@@ -144,25 +108,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (!authState.userId) {
                 throw new Error("Not authenticated");
             }
-
-            const response = await fetch(
-                `${API_BASE_URL}/account/update?user_id=${authState.userId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${authState.token}`,
-                    },
-                    body: JSON.stringify(userData),
-                }
+            await updateAccountProfile(
+                authState.userId,
+                authState.token,
+                userData
             );
-
-            if (!response.ok) {
-                throw new Error("Profile update failed");
-            }
-
-            // Nothing to update in local authState
-            await response.json();
         } catch (error) {
             console.error("Profile update failed:", error);
             throw new Error("Profile update failed");
