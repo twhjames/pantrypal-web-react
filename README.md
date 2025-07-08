@@ -86,7 +86,7 @@ src/
 Create a `.env` file in the root:
 
 ```bash
-VITE_API_BASE_URL=https://api.pantrypal.com
+PANTRYPAL_API_BASE_URL=http://localhost:8000
 ```
 
 ---

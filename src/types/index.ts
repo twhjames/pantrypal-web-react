@@ -1,7 +1,7 @@
 export interface User {
-    id: string;
+    id: number;
     email: string;
-    name: string;
+    username: string;
 }
 
 export interface PantryItem {
@@ -45,6 +45,6 @@ export interface ExpiringDeal {
 
 export interface AuthState {
     isAuthenticated: boolean;
-    user: User | null;
+    userId: number | null;
     token: string | null;
 }
