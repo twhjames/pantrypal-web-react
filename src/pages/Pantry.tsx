@@ -20,7 +20,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Camera } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import type { PantryItem } from "@/types";
+import type { PantryItem, Category } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+    listPantryItems,
+    addPantryItems,
+    updatePantryItem,
+    deletePantryItems,
+} from "@/api/pantry";
 
 const Pantry = () => {
     const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
@@ -29,6 +36,7 @@ const Pantry = () => {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
+    const { userId, token } = useAuth();
 
     // Form state for add/edit item
     const [itemForm, setItemForm] = useState({
@@ -60,50 +68,10 @@ const Pantry = () => {
     }, [pantryItems, searchTerm, categoryFilter]);
 
     const fetchPantryItems = async () => {
+        if (!userId) return;
         try {
-            // TODO: API Call to GET /pantry/items endpoint
-            console.log("API Call: GET /pantry/items");
-
-            // Mock data - replace with actual API call
-            const mockItems: PantryItem[] = [
-                {
-                    id: "1",
-                    name: "Milk",
-                    category: "dairy",
-                    quantity: 1,
-                    purchaseDate: "2024-06-20",
-                    expiryDate: "2024-06-25",
-                    status: "expiring-today",
-                },
-                {
-                    id: "2",
-                    name: "Bananas",
-                    category: "fruits",
-                    quantity: 6,
-                    purchaseDate: "2024-06-21",
-                    expiryDate: "2024-06-26",
-                    status: "expiring-soon",
-                },
-                {
-                    id: "3",
-                    name: "Bread",
-                    category: "grains",
-                    quantity: 1,
-                    purchaseDate: "2024-06-22",
-                    expiryDate: "2024-06-28",
-                    status: "fresh",
-                },
-                {
-                    id: "4",
-                    name: "Yogurt",
-                    category: "dairy",
-                    quantity: 4,
-                    purchaseDate: "2024-06-19",
-                    expiryDate: "2024-06-30",
-                    status: "fresh",
-                },
-            ];
-            setPantryItems(mockItems);
+            const items = await listPantryItems(userId, token);
+            setPantryItems(items);
         } catch (error) {
             console.error("Failed to fetch pantry items:", error);
             toast({
@@ -133,17 +101,21 @@ const Pantry = () => {
     };
 
     const handleAddItem = async () => {
+        if (!userId) return;
         try {
-            // TODO: API Call to POST /pantry/items endpoint
-            console.log("API Call: POST /pantry/items", itemForm);
-
-            const newItem: PantryItem = {
-                id: Date.now().toString(),
-                ...itemForm,
-                status: "fresh", // Backend will calculate actual status
+            const payload = {
+                item_name: itemForm.name,
+                quantity: itemForm.quantity,
+                unit: "pieces" as const,
+                category: itemForm.category
+                    ? ((itemForm.category.charAt(0).toUpperCase() +
+                          itemForm.category.slice(1)) as Category)
+                    : undefined,
+                purchase_date: itemForm.purchaseDate || undefined,
+                expiry_date: itemForm.expiryDate || undefined,
             };
-
-            setPantryItems([...pantryItems, newItem]);
+            const added = await addPantryItems(userId, token, [payload]);
+            setPantryItems([...pantryItems, ...added]);
             setItemForm({
                 name: "",
                 category: "",
@@ -180,20 +152,25 @@ const Pantry = () => {
     };
 
     const handleUpdateItem = async () => {
-        if (!editingItem) return;
+        if (!editingItem || !userId) return;
 
         try {
-            // TODO: API Call to PUT /pantry/items/{id} endpoint
-            console.log(
-                "API Call: PUT /pantry/items/" + editingItem.id,
-                itemForm
-            );
-
+            const payload = {
+                item_id: Number(editingItem.id),
+                item_name: itemForm.name,
+                quantity: itemForm.quantity,
+                unit: "pieces" as const,
+                category: itemForm.category
+                    ? ((itemForm.category.charAt(0).toUpperCase() +
+                          itemForm.category.slice(1)) as Category)
+                    : undefined,
+                purchase_date: itemForm.purchaseDate || undefined,
+                expiry_date: itemForm.expiryDate || undefined,
+            };
+            const updated = await updatePantryItem(userId, token, payload);
             const updatedItems = pantryItems.map(
                 (item): PantryItem =>
-                    item.id === editingItem.id
-                        ? { ...item, ...itemForm, status: "fresh" }
-                        : item
+                    item.id === editingItem.id ? updated : item
             );
 
             setPantryItems(updatedItems);
@@ -222,9 +199,9 @@ const Pantry = () => {
     };
 
     const handleDeleteItem = async (id: string) => {
+        if (!userId) return;
         try {
-            // TODO: API Call to DELETE /pantry/items/{id} endpoint
-            console.log("API Call: DELETE /pantry/items/" + id);
+            await deletePantryItems(userId, token, [Number(id)]);
 
             setPantryItems(pantryItems.filter((item) => item.id !== id));
 
