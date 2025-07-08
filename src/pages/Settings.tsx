@@ -12,12 +12,12 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
-    const { user, logout, updateProfile } = useAuth();
+    const { logout, updateProfile } = useAuth();
     const navigate = useNavigate();
 
     const [profileForm, setProfileForm] = useState({
-        name: user?.name || "",
-        email: user?.email || "",
+        username: "",
+        email: "",
     });
 
     const [passwordForm, setPasswordForm] = useState({
@@ -38,10 +38,50 @@ const Settings = () => {
 
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const payload: { username?: string; email?: string } = {};
+        if (profileForm.username) {
+            if (
+                profileForm.username.length < 3 ||
+                profileForm.username.length > 30
+            ) {
+                toast({
+                    title: "Invalid Username",
+                    description:
+                        "Username must be between 3 and 30 characters.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            payload.username = profileForm.username;
+        }
+        if (profileForm.email) {
+            payload.email = profileForm.email;
+        }
+
+        if (Object.keys(payload).length === 0) {
+            toast({
+                title: "Nothing to Update",
+                description: "Please provide a new username or email.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsUpdatingProfile(true);
 
+        if (Object.keys(payload).length === 0) {
+            toast({
+                title: "Nothing to Update",
+                description: "Please provide a new username or email.",
+                variant: "destructive",
+            });
+            setIsUpdatingProfile(false);
+            return;
+        }
+
         try {
-            await updateProfile(profileForm);
+            await updateProfile(payload);
             toast({
                 title: "Profile Updated",
                 description: "Your profile has been successfully updated.",
@@ -69,14 +109,19 @@ const Settings = () => {
             return;
         }
 
+        if (passwordForm.newPassword.length < 6) {
+            toast({
+                title: "Weak Password",
+                description: "Password must be at least 6 characters long.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsChangingPassword(true);
 
         try {
-            // TODO: API Call to PUT /auth/change-password endpoint
-            console.log("API Call: PUT /auth/change-password");
-
-            // Mock password change
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await updateProfile({ password: passwordForm.newPassword });
 
             setPasswordForm({
                 currentPassword: "",
@@ -154,17 +199,17 @@ const Settings = () => {
                                 className="space-y-4"
                             >
                                 <div>
-                                    <Label htmlFor="name">Full Name</Label>
+                                    <Label htmlFor="username">Username</Label>
                                     <Input
-                                        id="name"
-                                        value={profileForm.name}
+                                        id="username"
+                                        value={profileForm.username}
                                         onChange={(e) =>
                                             setProfileForm({
                                                 ...profileForm,
-                                                name: e.target.value,
+                                                username: e.target.value,
                                             })
                                         }
-                                        placeholder="Enter your full name"
+                                        placeholder="Enter your username"
                                     />
                                 </div>
                                 <div>
