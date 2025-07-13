@@ -43,6 +43,28 @@ export interface ExpiringDeal {
     category: string;
 }
 
+export interface ChatMessage {
+    user_id: number;
+    role: "user" | "assistant" | "system";
+    content: string;
+    timestamp?: string;
+}
+
+export interface ChatReply {
+    reply: string;
+}
+
+export interface ChatSession {
+    id: number;
+    title: string;
+    summary?: string;
+    prep_time?: number;
+    instructions: string[];
+    ingredients: string[];
+    available_ingredients: number | string[];
+    total_ingredients: number;
+}
+
 export interface AuthState {
     isAuthenticated: boolean;
     userId: number | null;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import type { AuthState } from "@/types";
 import {
     loginAccount,
@@ -34,25 +34,24 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
-    const [authState, setAuthState] = useState<AuthState>({
-        isAuthenticated: false,
-        userId: null,
-        token: null,
-    });
-
-    useEffect(() => {
-        // Check for stored auth token on app load
+    // Check for stored auth token on app load
+    const [authState, setAuthState] = useState<AuthState>(() => {
         const storedToken = localStorage.getItem("pantrypal_token");
         const storedUserId = localStorage.getItem("pantrypal_user_id");
 
         if (storedToken && storedUserId) {
-            setAuthState({
+            return {
                 isAuthenticated: true,
                 userId: Number(storedUserId),
                 token: storedToken,
-            });
+            };
         }
-    }, []);
+        return {
+            isAuthenticated: false,
+            userId: null,
+            token: null,
+        };
+    });
 
     const login = async (email: string, password: string) => {
         try {

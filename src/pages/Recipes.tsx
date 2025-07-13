@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ChefHat, Sparkles, MessageCircle, Clock, Users } from "lucide-react";
 import { AppLayout } from "@/components/Layout/AppLayout";
@@ -6,112 +6,149 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeChat } from "@/components/Pantry/RecipeChat";
-import type { Recipe } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { listChatSessions, recommendRecipe } from "@/api/chatbot";
+import type { ChatMessage, ChatSession, Recipe } from "@/types";
 
 const Recipes = () => {
     const location = useLocation();
-    const [chats, setChats] = useState<Recipe[]>([]); // Stores history of created recipe chats
-    const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null); // Currently selected chat session
+    const { userId, token } = useAuth();
+    const [chats, setChats] = useState<ChatSession[]>([]);
+    const [selectedSession, setSelectedSession] = useState<ChatSession | null>(
+        null
+    );
+    const [initialMessages, setInitialMessages] = useState<
+        ChatMessage[] | undefined
+    >(undefined);
 
-    // TODO: Replace with actual API call to fetch saved recipe chats from backend
+    const mapSessionToRecipe = (session: ChatSession): Recipe => {
+        const availableList = Array.isArray(session.available_ingredients)
+            ? session.available_ingredients.map((ing) => ing.toLowerCase())
+            : [];
+
+        return {
+            id: String(session.id),
+            name: session.title,
+            description: session.summary || "",
+            cookTime: session.prep_time || 0,
+            servings: 1,
+            ingredients: session.ingredients.map((name) => ({
+                name,
+                available: availableList.includes(name.toLowerCase()),
+            })),
+            matchedIngredients: Array.isArray(session.available_ingredients)
+                ? session.available_ingredients.length
+                : typeof session.available_ingredients === "number"
+                ? session.available_ingredients
+                : 0,
+            totalIngredients: session.total_ingredients,
+            instructions: session.instructions,
+        };
+    };
+
+    const fetchSessions = async () => {
+        if (!userId) return;
+        try {
+            const sessions = await listChatSessions(userId, token);
+            setChats(sessions);
+        } catch (error) {
+            console.error("Failed to load recipe chats:", error);
+        }
+    };
+
     useEffect(() => {
-        const mockRecipes: Recipe[] = [
-            {
-                id: "1",
-                name: "Spaghetti Bolognese",
-                description: "Hearty tomato-based pasta with minced beef",
-                cookTime: 45,
-                servings: 4,
-                ingredients: [
-                    { name: "pasta", available: true },
-                    { name: "minced beef", available: true },
-                    { name: "tomato sauce", available: true },
-                    { name: "onions", available: false },
-                    { name: "garlic", available: false },
-                ],
-                matchedIngredients: 3,
-                totalIngredients: 5,
-                instructions: [
-                    "Boil water and cook pasta until al dente.",
-                    "Sauté onions and garlic until fragrant.",
-                    "Add minced beef and cook until browned.",
-                    "Stir in tomato sauce and simmer.",
-                    "Combine sauce with drained pasta and serve hot.",
-                ],
-            },
-            {
-                id: "2",
-                name: "Avocado Toast",
-                description: "Quick breakfast with smashed avocado and lemon",
-                cookTime: 10,
-                servings: 2,
-                ingredients: [
-                    { name: "bread", available: true },
-                    { name: "avocado", available: true },
-                    { name: "lemon juice", available: false },
-                    { name: "salt", available: false },
-                ],
-                matchedIngredients: 2,
-                totalIngredients: 4,
-                instructions: [
-                    "Toast the bread slices to your desired crispness.",
-                    "Mash the avocado with lemon juice and salt.",
-                    "Spread the avocado mix on the toast.",
-                    "Serve immediately for best taste.",
-                ],
-            },
-        ];
-        setChats(mockRecipes);
-    }, []);
+        fetchSessions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, token]);
 
     // Handle navigation from Home page with recipe suggestion
     useEffect(() => {
         const state = location.state as { startNewChatWithSuggestion?: string };
         if (state?.startNewChatWithSuggestion) {
-            handleStartNewChat(state.startNewChatWithSuggestion);
+            void handleStartNewChat(state.startNewChatWithSuggestion);
             // Clear the location state to prevent re-triggering
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);
 
     // Handles creating a new blank recipe chat or with suggestion
-    const handleStartNewChat = (suggestion?: string) => {
-        const newRecipe: Recipe = {
-            id: Date.now().toString(), // Temporary unique ID
-            name: suggestion || "Untitled Recipe",
-            description: suggestion ? `Recipe based on: ${suggestion}` : "",
-            cookTime: 0,
-            servings: 1,
-            ingredients: [],
-            matchedIngredients: 0,
-            totalIngredients: 0,
-            instructions: [],
-        };
+    const handleStartNewChat = async (suggestion?: string) => {
+        try {
+            const response = await recommendRecipe(
+                {
+                    user_id: userId ?? 0,
+                    role: "user",
+                    content: suggestion || "Give me a recipe recommendation",
+                },
+                token
+            );
 
-        setChats([...chats, newRecipe]);
-        setSelectedRecipe(newRecipe);
+            let data: any = {};
+            try {
+                data = JSON.parse(response.reply);
+            } catch (err) {
+                console.error("Failed to parse recommendation", err);
+            }
+
+            const newSession: ChatSession = {
+                id: Date.now(),
+                title: data.title || suggestion || "Untitled Recipe",
+                summary:
+                    data.summary ||
+                    (suggestion ? `Recipe based on: ${suggestion}` : ""),
+                prep_time:
+                    typeof data.prep_time === "string"
+                        ? parseInt(data.prep_time)
+                        : data.prep_time || 0,
+                instructions: data.instructions || [],
+                ingredients: data.ingredients || [],
+                available_ingredients: data.available_ingredients ?? [],
+                total_ingredients: data.total_ingredients || 0,
+            };
+            const firstMsg: ChatMessage = {
+                user_id: userId ?? 0,
+                role: "assistant",
+                content: data.assistant_comment || "",
+                timestamp: new Date().toISOString(),
+            };
+
+            setInitialMessages([firstMsg]);
+            setSelectedSession(newSession);
+            await fetchSessions();
+        } catch (error) {
+            console.error("Failed to start new chat", error);
+        }
     };
 
     // Opens existing chat again if needed
-    const handleResumeChat = (recipe: Recipe) => {
-        setSelectedRecipe(recipe);
+    const handleResumeChat = (session: ChatSession) => {
+        setSelectedSession(session);
+        setInitialMessages(undefined);
     };
 
     // Returns badge color based on ingredient match percentage
     const getAvailabilityColor = (matched: number, total: number): string => {
         const percentage = total === 0 ? 0 : (matched / total) * 100;
-        if (percentage === 100) return "bg-green-100 text-green-800";
-        if (percentage >= 70) return "bg-yellow-100 text-yellow-800";
-        return "bg-orange-100 text-orange-800";
+        if (percentage === 100)
+            return "bg-green-100 text-green-800 hover:bg-green-200";
+        if (percentage >= 70)
+            return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+        return "bg-red-100 text-red-800 hover:bg-red-200";
     };
 
     // Conditional rendering for chat interface
-    if (selectedRecipe) {
+    if (selectedSession) {
         return (
             <AppLayout>
                 <RecipeChat
-                    recipe={selectedRecipe}
-                    onBack={() => setSelectedRecipe(null)} // Exit chat
+                    recipe={mapSessionToRecipe(selectedSession)}
+                    onBack={() => {
+                        setSelectedSession(null);
+                        setInitialMessages(undefined);
+                        void fetchSessions();
+                    }} // Exit chat
+                    sessionId={selectedSession.id}
+                    initialMessages={initialMessages}
                 />
             </AppLayout>
         );
@@ -134,7 +171,7 @@ const Recipes = () => {
                             button below to start chatting with our AI chef.
                         </p>
                         <Button
-                            onClick={() => handleStartNewChat()}
+                            onClick={() => void handleStartNewChat()}
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
@@ -160,7 +197,7 @@ const Recipes = () => {
                         </p>
 
                         <Button
-                            onClick={() => handleStartNewChat()}
+                            onClick={() => void handleStartNewChat()}
                             className="bg-green-600 hover:bg-green-700 text-white"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
@@ -170,81 +207,94 @@ const Recipes = () => {
 
                     {/* Previously created chats */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {chats.map((recipe) => (
-                            <Card
-                                key={recipe.id}
-                                className="hover:shadow-md border border-gray-200 transition-shadow duration-200 cursor-pointer group"
-                                onClick={() => handleResumeChat(recipe)}
-                            >
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
-                                        <CardTitle className="text-lg leading-tight group-hover:text-green-600 transition-colors">
-                                            {recipe.name || "Untitled Recipe"}
-                                        </CardTitle>
-                                        <Badge
-                                            className={getAvailabilityColor(
-                                                recipe.matchedIngredients,
-                                                recipe.totalIngredients
-                                            )}
-                                        >
-                                            {recipe.matchedIngredients}/
-                                            {recipe.totalIngredients}
-                                        </Badge>
-                                    </div>
-                                    <p className="text-sm text-gray-600">
-                                        {recipe.description ||
-                                            "No description yet. Click to continue..."}
-                                    </p>
-                                </CardHeader>
-
-                                <CardContent className="space-y-4">
-                                    {/* Meta Info */}
-                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                        <div className="flex items-center space-x-1">
-                                            <Clock className="w-4 h-4" />
-                                            <span>{recipe.cookTime} min</span>
+                        {chats.map((session) => {
+                            const recipe = mapSessionToRecipe(session);
+                            return (
+                                <Card
+                                    key={session.id}
+                                    className="hover:shadow-md border border-gray-200 transition-shadow duration-200 cursor-pointer group flex flex-col h-full"
+                                    onClick={() => handleResumeChat(session)}
+                                >
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <CardTitle className="text-lg leading-tight group-hover:text-green-600 transition-colors">
+                                                {recipe.name ||
+                                                    "Untitled Recipe"}
+                                            </CardTitle>
+                                            <Badge
+                                                className={getAvailabilityColor(
+                                                    recipe.matchedIngredients,
+                                                    recipe.totalIngredients
+                                                )}
+                                            >
+                                                {recipe.matchedIngredients}/
+                                                {recipe.totalIngredients}
+                                            </Badge>
                                         </div>
-                                        <div className="flex items-center space-x-1">
-                                            <Users className="w-4 h-4" />
-                                            <span>
-                                                {recipe.servings} servings
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Ingredients */}
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700 mb-2">
-                                            Ingredients needed:
+                                        <p className="text-sm text-gray-600">
+                                            {recipe.description ||
+                                                "No description yet. Click to continue..."}
                                         </p>
-                                        <div className="flex flex-wrap gap-1">
-                                            {recipe.ingredients.map(
-                                                (ingredient, idx) => (
+                                    </CardHeader>
+                                    <CardContent className="space-y-4 flex flex-col justify-between flex-1">
+                                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                            <div className="flex items-center space-x-1">
+                                                <Clock className="w-4 h-4" />
+                                                <span>
+                                                    {recipe.cookTime} min
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center space-x-1">
+                                                <Users className="w-4 h-4" />
+                                                <span>
+                                                    {recipe.servings} servings
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700 mb-2">
+                                                Ingredients needed:
+                                            </p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {recipe.ingredients
+                                                    .slice(0, 5)
+                                                    .map((ingredient, idx) => (
+                                                        <Badge
+                                                            key={idx}
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                        >
+                                                            {ingredient.name}
+                                                        </Badge>
+                                                    ))}
+                                                {recipe.ingredients.length >
+                                                    5 && (
                                                     <Badge
-                                                        key={idx}
                                                         variant="outline"
                                                         className="text-xs"
                                                     >
-                                                        {ingredient.name}
+                                                        +
+                                                        {recipe.ingredients
+                                                            .length - 5}{" "}
+                                                        more
                                                     </Badge>
-                                                )
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <Button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleResumeChat(recipe);
-                                        }}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        <MessageCircle className="w-4 h-4 mr-2" />
-                                        Chat & Customise
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        <Button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleResumeChat(session);
+                                            }}
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                        >
+                                            <MessageCircle className="w-4 h-4 mr-2" />
+                                            Chat & Customise
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 </div>
             )}
