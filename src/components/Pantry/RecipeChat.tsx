@@ -1,27 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { chatWithHistory, getChatSessionHistory } from "@/api/chatbot";
 import { ArrowLeft, Send, ChefHat, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import type { Recipe } from "@/types";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { ChatMessage, Recipe } from "@/types";
+
+const MarkdownText = ({ text }: { text: string }) => (
+    <div className="prose prose-sm dark:prose-invert max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+    </div>
+);
 
 interface RecipeChatProps {
     recipe: Recipe;
     onBack: () => void;
+    sessionId?: number;
+    initialMessages?: ChatMessage[];
 }
 
-export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
-    const [messages, setMessages] = useState([
-        {
-            id: 1,
-            type: "bot",
-            text: `Hi! I'm here to help you customize the ${recipe.name} recipe. You can ask me to modify ingredients, cooking methods, or dietary preferences. What would you like to adjust?`,
-        },
-    ]);
+export const RecipeChat = ({
+    recipe,
+    onBack,
+    sessionId,
+    initialMessages,
+}: RecipeChatProps) => {
+    const { userId, token } = useAuth();
+    const parseContent = (content: string): string => {
+        try {
+            const data = JSON.parse(content);
+            return data.assistant_comment || content;
+        } catch {
+            return content;
+        }
+    };
+
+    const [messages, setMessages] = useState(
+        initialMessages?.map((m, idx) => ({
+            id: idx,
+            type: m.role === "user" ? "user" : "bot",
+            text: parseContent(m.content),
+        })) || [
+            {
+                id: 1,
+                type: "bot",
+                text: `Hi! I'm here to help you customize the ${recipe.name} recipe. You can ask me to modify ingredients, cooking methods, or dietary preferences. What would you like to adjust?`,
+            },
+        ]
+    );
     const [inputValue, setInputValue] = useState("");
 
-    const handleSendMessage = () => {
+    useEffect(() => {
+        async function loadHistory() {
+            if (sessionId && !initialMessages) {
+                try {
+                    const history = await getChatSessionHistory(
+                        sessionId,
+                        token
+                    );
+                    setMessages(
+                        history.map((msg, idx) => ({
+                            id: idx,
+                            type: msg.role === "user" ? "user" : "bot",
+                            text: parseContent(msg.content),
+                        }))
+                    );
+                } catch (error) {
+                    console.error("Failed to load chat history", error);
+                }
+            }
+        }
+        loadHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sessionId]);
+
+    const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
 
         const userMessage = {
@@ -29,17 +91,33 @@ export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
             type: "user",
             text: inputValue,
         };
+        setMessages((prev) => [...prev, userMessage]);
 
-        // TODO: Replace this with actual API call to Recipe Customization Chat endpoint
-        // Example: POST /chat/recipe-customization { recipeId, userMessage }
-
-        const botMessage = {
-            id: messages.length + 2,
-            type: "bot",
-            text: `Thanks for your message! We'll work on updating "${recipe.name}" accordingly.`,
-        };
-
-        setMessages([...messages, userMessage, botMessage]);
+        try {
+            const response = await chatWithHistory(
+                {
+                    user_id: userId ?? 0,
+                    role: "user",
+                    content: inputValue,
+                },
+                token
+            );
+            let text = response.reply;
+            try {
+                const data = JSON.parse(response.reply);
+                text = data.assistant_comment || response.reply;
+            } catch {
+                // ignore JSON parse errors
+            }
+            const botMessage = {
+                id: Date.now(),
+                type: "bot",
+                text,
+            };
+            setMessages((prev) => [...prev, botMessage]);
+        } catch (error) {
+            console.error("Chatbot error", error);
+        }
         setInputValue("");
     };
 
@@ -79,7 +157,7 @@ export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recipe Details Card */}
-                <Card className="lg:col-span-1">
+                <Card className="lg:col-span-1 overflow-y-auto max-h-[calc(100vh-8rem)] flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">{recipe.name}</CardTitle>
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -93,7 +171,7 @@ export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 flex-1 overflow-y-auto">
                         <div>
                             <h4 className="font-medium text-gray-900 mb-2">
                                 Ingredients:
@@ -102,14 +180,21 @@ export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
                                 {recipe.ingredients.map((ingredient, idx) => (
                                     <div
                                         key={idx}
-                                        className="flex items-center justify-between"
+                                        className="flex items-center justify-between space-x-2"
                                     >
-                                        <span className="text-sm">
-                                            {ingredient.name}
-                                        </span>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <span className="text-sm flex-1 truncate cursor-pointer">
+                                                    {ingredient.name}
+                                                </span>
+                                            </PopoverTrigger>
+                                            <PopoverContent side="bottom">
+                                                {ingredient.name}
+                                            </PopoverContent>
+                                        </Popover>
                                         <Badge
                                             variant="outline"
-                                            className="text-xs"
+                                            className="text-xs whitespace-nowrap"
                                         >
                                             {ingredient.available
                                                 ? "Available"
@@ -162,9 +247,13 @@ export const RecipeChat = ({ recipe, onBack }: RecipeChatProps) => {
                                                 : "bg-white text-gray-900 border border-gray-200"
                                         }`}
                                     >
-                                        <p className="text-sm">
-                                            {message.text}
-                                        </p>
+                                        {message.type === "user" ? (
+                                            <p className="text-sm whitespace-pre-wrap">
+                                                {message.text}
+                                            </p>
+                                        ) : (
+                                            <MarkdownText text={message.text} />
+                                        )}
                                     </div>
                                 </div>
                             ))}
