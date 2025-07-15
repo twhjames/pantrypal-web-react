@@ -45,6 +45,7 @@ export interface ExpiringDeal {
 
 export interface ChatMessage {
     user_id: number;
+    session_id?: number;
     role: "user" | "assistant" | "system";
     content: string;
     timestamp?: string;

@@ -24,7 +24,7 @@ const MarkdownText = ({ text }: { text: string }) => (
 interface RecipeChatProps {
     recipe: Recipe;
     onBack: () => void;
-    sessionId?: number;
+    sessionId: number;
     initialMessages?: ChatMessage[];
 }
 
@@ -97,6 +97,7 @@ export const RecipeChat = ({
             const response = await chatWithHistory(
                 {
                     user_id: userId ?? 0,
+                    session_id: sessionId,
                     role: "user",
                     content: inputValue,
                 },
