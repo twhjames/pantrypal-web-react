@@ -89,9 +89,9 @@ const Recipes = () => {
             } catch (err) {
                 console.error("Failed to parse recommendation", err);
             }
-
+            const current_session_id = data.id;
             const newSession: ChatSession = {
-                id: Date.now(),
+                id: current_session_id,
                 title: data.title || suggestion || "Untitled Recipe",
                 summary:
                     data.summary ||
@@ -105,14 +105,22 @@ const Recipes = () => {
                 available_ingredients: data.available_ingredients ?? [],
                 total_ingredients: data.total_ingredients || 0,
             };
+            const userMsg: ChatMessage = {
+                user_id: userId ?? 0,
+                session_id: current_session_id,
+                role: "user",
+                content: suggestion || "Give me a recipe recommendation",
+                timestamp: new Date().toISOString(),
+            };
             const firstMsg: ChatMessage = {
                 user_id: userId ?? 0,
+                session_id: current_session_id,
                 role: "assistant",
                 content: data.assistant_comment || "",
                 timestamp: new Date().toISOString(),
             };
 
-            setInitialMessages([firstMsg]);
+            setInitialMessages([userMsg, firstMsg]);
             setSelectedSession(newSession);
             await fetchSessions();
         } catch (error) {
