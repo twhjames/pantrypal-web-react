@@ -53,6 +53,7 @@ export interface ChatMessage {
 
 export interface ChatReply {
     reply: string;
+    session_id: number;
 }
 
 export interface ChatSession {

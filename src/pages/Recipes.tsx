@@ -1,13 +1,36 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { ChefHat, Sparkles, MessageCircle, Clock, Users } from "lucide-react";
+import {
+    ChefHat,
+    Sparkles,
+    MessageCircle,
+    Clock,
+    Users,
+    Trash2,
+} from "lucide-react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { RecipeChat } from "@/components/Pantry/RecipeChat";
 import { useAuth } from "@/contexts/AuthContext";
-import { listChatSessions, recommendRecipe } from "@/api/chatbot";
+import {
+    listChatSessions,
+    recommendRecipe,
+    deleteChatSession,
+} from "@/api/chatbot";
+import { toast } from "@/hooks/use-toast";
 import type { ChatMessage, ChatSession, Recipe } from "@/types";
 
 const Recipes = () => {
@@ -50,6 +73,7 @@ const Recipes = () => {
         if (!userId) return;
         try {
             const sessions = await listChatSessions(userId, token);
+            sessions.sort((a, b) => b.id - a.id);
             setChats(sessions);
         } catch (error) {
             console.error("Failed to load recipe chats:", error);
@@ -89,7 +113,7 @@ const Recipes = () => {
             } catch (err) {
                 console.error("Failed to parse recommendation", err);
             }
-            const current_session_id = data.id;
+            const current_session_id = response.session_id;
             const newSession: ChatSession = {
                 id: current_session_id,
                 title: data.title || suggestion || "Untitled Recipe",
@@ -132,6 +156,26 @@ const Recipes = () => {
     const handleResumeChat = (session: ChatSession) => {
         setSelectedSession(session);
         setInitialMessages(undefined);
+    };
+
+    const handleDeleteSession = async (sessionId: number) => {
+        try {
+            await deleteChatSession(sessionId, token);
+            // ensure no chat is opened as a side effect of the click event
+            setSelectedSession(null);
+            setChats((prev) => prev.filter((s) => s.id !== sessionId));
+            toast({
+                title: "Session Deleted",
+                description: "Recipe chat removed",
+            });
+        } catch (error) {
+            console.error("Failed to delete session", error);
+            toast({
+                title: "Error",
+                description: "Failed to delete chat session",
+                variant: "destructive",
+            });
+        }
     };
 
     // Returns badge color based on ingredient match percentage
@@ -229,15 +273,59 @@ const Recipes = () => {
                                                 {recipe.name ||
                                                     "Untitled Recipe"}
                                             </CardTitle>
-                                            <Badge
-                                                className={getAvailabilityColor(
-                                                    recipe.matchedIngredients,
-                                                    recipe.totalIngredients
-                                                )}
-                                            >
-                                                {recipe.matchedIngredients}/
-                                                {recipe.totalIngredients}
-                                            </Badge>
+                                            <div className="flex items-center gap-2">
+                                                <Badge
+                                                    className={getAvailabilityColor(
+                                                        recipe.matchedIngredients,
+                                                        recipe.totalIngredients
+                                                    )}
+                                                >
+                                                    {recipe.matchedIngredients}/
+                                                    {recipe.totalIngredients}
+                                                </Badge>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <button
+                                                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                                            onClick={(e) =>
+                                                                e.stopPropagation()
+                                                            }
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Delete Chat
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you
+                                                                want to delete
+                                                                this chat
+                                                                session?
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>
+                                                                Cancel
+                                                            </AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={(
+                                                                    e
+                                                                ) => {
+                                                                    e.stopPropagation();
+                                                                    void handleDeleteSession(
+                                                                        session.id
+                                                                    );
+                                                                }}
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
                                         </div>
                                         <p className="text-sm text-gray-600">
                                             {recipe.description ||
