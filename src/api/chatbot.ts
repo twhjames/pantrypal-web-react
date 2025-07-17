@@ -73,3 +73,22 @@ export async function getChatSessionHistory(
     }
     return response.json();
 }
+
+export async function deleteChatSession(
+    sessionId: number,
+    token: string | null
+): Promise<void> {
+    const response = await fetch(
+        `${API_BASE_URL}/chatbot/sessions/${sessionId}`,
+        {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Failed to delete chat session");
+    }
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { chatWithHistory, getChatSessionHistory } from "@/api/chatbot";
 import { ArrowLeft, Send, ChefHat, Clock, Users } from "lucide-react";
@@ -57,7 +57,12 @@ export const RecipeChat = ({
             },
         ]
     );
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const [inputValue, setInputValue] = useState("");
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     useEffect(() => {
         async function loadHistory() {
@@ -258,6 +263,7 @@ export const RecipeChat = ({
                                     </div>
                                 </div>
                             ))}
+                            <div ref={messagesEndRef} />
                         </div>
 
                         {/* Suggested Questions */}
