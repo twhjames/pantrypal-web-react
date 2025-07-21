@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { PantryItemCard } from "@/components/Pantry/PantryItemCard";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Camera } from "lucide-react";
+import { Plus, Search, Camera, Image as ImageIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { PantryItem, Category } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +46,9 @@ const Pantry = () => {
         purchaseDate: "",
         expiryDate: "",
     });
+
+    const cameraInputRef = useRef<HTMLInputElement | null>(null);
+    const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
     const categories = [
         "all",
@@ -220,8 +223,18 @@ const Pantry = () => {
     };
 
     const handleScanReceipt = () => {
-        // TODO: API Call to POST /pantry/scan-receipt endpoint
-        console.log("API Call: POST /pantry/scan-receipt");
+        cameraInputRef.current?.click();
+    };
+
+    const handleUploadReceipt = () => {
+        galleryInputRef.current?.click();
+    };
+
+    const handleReceiptSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        // TODO: Upload image to S3 for OCR
+        console.log("Placeholder upload to S3", file);
         toast({
             title: "Feature Coming Soon",
             description: "Receipt scanning will be available soon!",
@@ -421,7 +434,7 @@ const Pantry = () => {
                                     }
                                 />
                             </div>
-                            <div className="flex gap-2 pt-4">
+                            <div className="flex flex-wrap gap-2 pt-4">
                                 <Button
                                     onClick={
                                         editingItem
@@ -443,9 +456,32 @@ const Pantry = () => {
                                     <Camera size={16} />
                                     Scan
                                 </Button>
+                                <Button
+                                    onClick={handleUploadReceipt}
+                                    variant="outline"
+                                    className="flex items-center gap-2"
+                                >
+                                    <ImageIcon size={16} />
+                                    Gallery
+                                </Button>
                             </div>
                         </div>
                     </DialogContent>
+                    <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handleReceiptSelected}
+                    />
+                    <input
+                        ref={galleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleReceiptSelected}
+                    />
                 </Dialog>
             </div>
         </AppLayout>
