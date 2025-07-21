@@ -5,9 +5,13 @@ import { StatCard } from "@/components/Pantry/StatCard";
 import { Package, AlertTriangle, Clock, X, ChefHat } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PantryItem } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { getPantryStats, listExpiringPantryItems } from "@/api/pantry";
+import { getRecipeTitleSuggestions } from "@/api/chatbot";
 
 const Home = () => {
     const navigate = useNavigate();
+    const { userId, token } = useAuth();
     const [pantryStats, setPantryStats] = useState({
         total: 0,
         expiringSoon: 0,
@@ -19,56 +23,28 @@ const Home = () => {
     const [isLoadingRecipes, setIsLoadingRecipes] = useState(false);
 
     useEffect(() => {
-        // TODO: Replace with actual API calls to PantryPal backend
+        // Load dashboard data whenever the user or token changes
         fetchPantryStats();
         fetchExpiringItems();
         fetchRecipeSuggestions();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, token]);
 
     const fetchPantryStats = async () => {
+        if (!userId) return;
         try {
-            // TODO: API Call to GET /pantry/stats endpoint
-            console.log("API Call: GET /pantry/stats");
-
-            // Mock data - replace with actual API call
-            setPantryStats({
-                total: 24,
-                expiringSoon: 3,
-                expiringToday: 1,
-                expired: 0,
-            });
+            const stats = await getPantryStats(userId, token);
+            setPantryStats(stats);
         } catch (error) {
             console.error("Failed to fetch pantry stats:", error);
         }
     };
 
     const fetchExpiringItems = async () => {
+        if (!userId) return;
         try {
-            // TODO: API Call to GET /pantry/expiring endpoint
-            console.log("API Call: GET /pantry/expiring");
-
-            // Mock data - replace with actual API call
-            const mockItems: PantryItem[] = [
-                {
-                    id: "1",
-                    name: "Milk",
-                    category: "dairy",
-                    quantity: 1,
-                    purchaseDate: "2024-06-20",
-                    expiryDate: "2024-06-25",
-                    status: "expiring-today",
-                },
-                {
-                    id: "2",
-                    name: "Bananas",
-                    category: "fruits",
-                    quantity: 6,
-                    purchaseDate: "2024-06-21",
-                    expiryDate: "2024-06-26",
-                    status: "expiring-soon",
-                },
-            ];
-            setExpiringItems(mockItems);
+            const items = await listExpiringPantryItems(userId, token);
+            setExpiringItems(items);
         } catch (error) {
             console.error("Failed to fetch expiring items:", error);
         }
@@ -77,17 +53,8 @@ const Home = () => {
     const fetchRecipeSuggestions = async () => {
         setIsLoadingRecipes(true);
         try {
-            // TODO: API Call to POST /chatbot/recommend endpoint
-            console.log("API Call: POST /chatbot/recommend");
-
-            // Mock data - replace with actual API call
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-            setRecipeSuggestions([
-                "Quick Vegetable Stir-Fry with expiring vegetables",
-                "Banana Bread using overripe bananas",
-                "Creamy Milk-based Soup before it expires",
-                "Fresh Fruit Smoothie with expiring fruits",
-            ]);
+            const titles = await getRecipeTitleSuggestions(token);
+            setRecipeSuggestions(titles);
         } catch (error) {
             console.error("Failed to fetch recipe suggestions:", error);
         } finally {

@@ -92,3 +92,20 @@ export async function deleteChatSession(
         throw new Error("Failed to delete chat session");
     }
 }
+
+export async function getRecipeTitleSuggestions(
+    token?: string | null
+): Promise<string[]> {
+    const response = await fetch(`${API_BASE_URL}/chatbot/title-suggestions`, {
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    if (!response.ok) {
+        throw new Error("Failed to fetch recipe title suggestions");
+    }
+    const data = await response.json();
+    // Endpoint may return the suggestions array directly or wrapped in an object
+    return Array.isArray(data) ? data : data.suggestions ?? [];
+}

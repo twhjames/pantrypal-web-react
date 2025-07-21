@@ -71,6 +71,7 @@ export interface AuthState {
     isAuthenticated: boolean;
     userId: number | null;
     token: string | null;
+    tokenExpiration?: number | null;
 }
 
 export * from "./pantry";
