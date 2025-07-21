@@ -114,3 +114,55 @@ export async function deletePantryItems(
         throw new Error("Failed to delete pantry items");
     }
 }
+
+export interface PantryStats {
+    total: number;
+    expiringSoon: number;
+    expiringToday: number;
+    expired: number;
+}
+
+export async function getPantryStats(
+    userId: number,
+    token: string | null
+): Promise<PantryStats> {
+    const response = await fetch(
+        `${API_BASE_URL}/pantry/stats?user_id=${userId}`,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Failed to fetch pantry stats");
+    }
+    const data = await response.json();
+    return {
+        total: data.total_items ?? data.total ?? 0,
+        expiringSoon: data.expiring_soon ?? data.expiringSoon ?? 0,
+        expiringToday: data.expiring_today ?? data.expiringToday ?? 0,
+        expired: data.expired ?? 0,
+    };
+}
+
+export async function listExpiringPantryItems(
+    userId: number,
+    token: string | null
+): Promise<PantryItem[]> {
+    const response = await fetch(
+        `${API_BASE_URL}/pantry/expiring?user_id=${userId}`,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Failed to fetch expiring pantry items");
+    }
+    const data = await response.json();
+    return data.map(mapItem);
+}

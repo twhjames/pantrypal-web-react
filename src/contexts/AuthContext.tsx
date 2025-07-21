@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import type { AuthState } from "@/types";
+import { decodeTokenExpiration } from "@/lib/auth";
 import {
     loginAccount,
     registerAccount,
@@ -38,18 +39,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const [authState, setAuthState] = useState<AuthState>(() => {
         const storedToken = localStorage.getItem("pantrypal_token");
         const storedUserId = localStorage.getItem("pantrypal_user_id");
+        const storedExp = localStorage.getItem("pantrypal_token_exp");
 
         if (storedToken && storedUserId) {
-            return {
-                isAuthenticated: true,
-                userId: Number(storedUserId),
-                token: storedToken,
-            };
+            const exp = storedExp
+                ? Number(storedExp)
+                : decodeTokenExpiration(storedToken);
+            if (exp && Date.now() >= exp) {
+                localStorage.removeItem("pantrypal_token");
+                localStorage.removeItem("pantrypal_user_id");
+                localStorage.removeItem("pantrypal_token_exp");
+            } else {
+                return {
+                    isAuthenticated: true,
+                    userId: Number(storedUserId),
+                    token: storedToken,
+                    tokenExpiration: exp,
+                };
+            }
         }
         return {
             isAuthenticated: false,
             userId: null,
             token: null,
+            tokenExpiration: null,
         };
     });
 
@@ -58,8 +71,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             const data = await loginAccount(email, password);
             const tokenValue = data.token;
             const userId = data.user_id;
+            const exp = decodeTokenExpiration(tokenValue);
 
             localStorage.setItem("pantrypal_token", tokenValue);
+            if (exp) {
+                localStorage.setItem("pantrypal_token_exp", String(exp));
+            }
             if (userId !== undefined) {
                 localStorage.setItem("pantrypal_user_id", String(userId));
             }
@@ -68,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 isAuthenticated: true,
                 userId: userId ?? null,
                 token: tokenValue,
+                tokenExpiration: exp ?? null,
             });
         } catch (error) {
             console.error("Login failed:", error);
@@ -91,10 +109,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const logout = () => {
         localStorage.removeItem("pantrypal_token");
         localStorage.removeItem("pantrypal_user_id");
+        localStorage.removeItem("pantrypal_token_exp");
         setAuthState({
             isAuthenticated: false,
             userId: null,
             token: null,
+            tokenExpiration: null,
         });
     };
 
@@ -117,6 +137,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             throw new Error("Profile update failed");
         }
     };
+
+    useEffect(() => {
+        if (authState.isAuthenticated && authState.tokenExpiration) {
+            const timeout = authState.tokenExpiration - Date.now();
+            if (timeout <= 0) {
+                logout();
+                return;
+            }
+            const timer = setTimeout(logout, timeout);
+            return () => clearTimeout(timer);
+        }
+    }, [authState.isAuthenticated, authState.tokenExpiration]);
 
     return (
         <AuthContext.Provider
