@@ -28,6 +28,8 @@ import {
     updatePantryItem,
     deletePantryItems,
 } from "@/api/pantry";
+import { getReceiptPresignedUrl } from "@/api/receipt";
+import LoadingOverlay from "@/components/Pantry/LoadingOverlay";
 
 const Pantry = () => {
     const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
@@ -36,6 +38,7 @@ const Pantry = () => {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
     const { userId, token } = useAuth();
 
     // Form state for add/edit item
@@ -230,19 +233,58 @@ const Pantry = () => {
         galleryInputRef.current?.click();
     };
 
-    const handleReceiptSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleReceiptSelected = async (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        // TODO: Upload image to S3 for OCR
-        console.log("Placeholder upload to S3", file);
-        toast({
-            title: "Feature Coming Soon",
-            description: "Receipt scanning will be available soon!",
-        });
+        if (!file || !userId) return;
+        // Request a presigned URL from the backend and upload the receipt
+        try {
+            const url = await getReceiptPresignedUrl(userId, token);
+            if (!url) {
+                toast({
+                    title: "Error",
+                    description: "Failed to obtain upload URL",
+                    variant: "destructive",
+                });
+                return;
+            }
+            await fetch(url, {
+                method: "PUT",
+                headers: { "Content-Type": file.type },
+                body: file,
+            });
+
+            toast({
+                title: "Upload Success",
+                description: "Receipt uploaded. Processing...",
+            });
+
+            // Show a short loading screen while the backend processes the receipt
+            setIsProcessing(true);
+
+            // Give the backend a brief moment to store the parsed items,
+            // then refresh the pantry list automatically.
+            setTimeout(() => {
+                fetchPantryItems().catch((err) =>
+                    console.error("Failed to refresh pantry items:", err)
+                );
+                setIsProcessing(false);
+            }, 2000);
+        } catch (error) {
+            console.error("Failed to upload receipt:", error);
+            toast({
+                title: "Error",
+                description: "Failed to upload receipt",
+                variant: "destructive",
+            });
+        }
     };
 
     return (
         <AppLayout>
+            {isProcessing && <LoadingOverlay message="Processing receipt..." />}
             <div className="pt-2 space-y-6 mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
