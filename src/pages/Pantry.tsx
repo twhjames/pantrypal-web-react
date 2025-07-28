@@ -28,7 +28,8 @@ import {
     updatePantryItem,
     deletePantryItems,
 } from "@/api/pantry";
-import { getReceiptPresignedUrl } from "@/api/receipt";
+import { uploadReceipt, getReceiptResult } from "@/api/receipt";
+import { fileToBase64 } from "@/lib/file";
 import LoadingOverlay from "@/components/Pantry/LoadingOverlay";
 
 const Pantry = () => {
@@ -237,43 +238,100 @@ const Pantry = () => {
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        // allow re-selecting the same file later
+        e.target.value = "";
+
         if (!file || !userId) return;
-        // Request a presigned URL from the backend and upload the receipt
+        // TODO: Request a presigned URL from the backend and upload the receipt when we change cloud infra
         try {
-            const url = await getReceiptPresignedUrl(userId, token);
-            if (!url) {
-                toast({
-                    title: "Error",
-                    description: "Failed to obtain upload URL",
-                    variant: "destructive",
-                });
-                return;
-            }
-            await fetch(url, {
-                method: "PUT",
-                headers: { "Content-Type": file.type },
-                body: file,
-            });
+            // Show a short loading screen while the backend processes the receipt
+            setIsProcessing(true);
+
+            const base64 = await fileToBase64(file);
+
+            const { receipt_id } = await uploadReceipt(userId, token, base64);
 
             toast({
                 title: "Upload Success",
                 description: "Receipt uploaded. Processing...",
             });
 
-            // Show a short loading screen while the backend processes the receipt
-            setIsProcessing(true);
+            // Count the number of poll attempts
+            let attempts = 0;
 
             // Give the backend a brief moment to store the parsed items,
             // then refresh the pantry list automatically.
-            setTimeout(() => {
-                fetchPantryItems().catch((err) =>
-                    console.error("Failed to refresh pantry items:", err)
-                );
-                setIsProcessing(false);
+            const interval = setInterval(async () => {
+                attempts += 1;
+                try {
+                    const result = await getReceiptResult(receipt_id, token);
+                    if (result) {
+                        clearInterval(interval);
+                        await fetchPantryItems();
+                        setIsProcessing(false);
+                        setIsAddModalOpen(false);
+                        setEditingItem(null);
+                        setItemForm({
+                            name: "",
+                            category: "",
+                            quantity: 1,
+                            purchaseDate: "",
+                            expiryDate: "",
+                        });
+                        return;
+                    }
+
+                    if (attempts >= 3) {
+                        clearInterval(interval);
+                        await fetchPantryItems();
+                        setIsProcessing(false);
+                        setIsAddModalOpen(false);
+                        setEditingItem(null);
+                        setItemForm({
+                            name: "",
+                            category: "",
+                            quantity: 1,
+                            purchaseDate: "",
+                            expiryDate: "",
+                        });
+                        toast({
+                            title: "Pending",
+                            description:
+                                "Receipt processing is taking longer than expected.",
+                        });
+                    }
+                } catch (err) {
+                    clearInterval(interval);
+                    setIsProcessing(false);
+                    setIsAddModalOpen(false);
+                    setEditingItem(null);
+                    setItemForm({
+                        name: "",
+                        category: "",
+                        quantity: 1,
+                        purchaseDate: "",
+                        expiryDate: "",
+                    });
+                    console.error("Failed to process receipt:", err);
+                    toast({
+                        title: "Error",
+                        description: "Failed to process receipt",
+                        variant: "destructive",
+                    });
+                }
             }, 2000);
         } catch (error) {
             console.error("Failed to upload receipt:", error);
+            setIsProcessing(false);
+            setIsAddModalOpen(false);
+            setEditingItem(null);
+            setItemForm({
+                name: "",
+                category: "",
+                quantity: 1,
+                purchaseDate: "",
+                expiryDate: "",
+            });
             toast({
                 title: "Error",
                 description: "Failed to upload receipt",
@@ -285,7 +343,11 @@ const Pantry = () => {
     return (
         <AppLayout>
             {isProcessing && <LoadingOverlay message="Processing receipt..." />}
-            <div className="pt-2 space-y-6 mx-auto">
+            <div
+                className={`pt-2 space-y-6 mx-auto ${
+                    isProcessing ? "pointer-events-none" : ""
+                }`}
+            >
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         My Pantry 🧺
@@ -359,6 +421,7 @@ const Pantry = () => {
                 <Dialog
                     open={isAddModalOpen}
                     onOpenChange={(open) => {
+                        if (isProcessing) return;
                         setIsAddModalOpen(open);
                         if (!open) {
                             setEditingItem(null);

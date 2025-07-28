@@ -144,7 +144,7 @@ export const RecipeChat = ({
     return (
         <div className="space-y-6">
             {/* Header Section */}
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <Button
                     variant="ghost"
                     onClick={onBack}
@@ -155,7 +155,7 @@ export const RecipeChat = ({
                 </Button>
                 <div className="flex items-center space-x-2">
                     <ChefHat className="w-6 h-6 text-green-600" />
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900 whitespace-nowrap">
                         Recipe Assistant
                     </h1>
                 </div>

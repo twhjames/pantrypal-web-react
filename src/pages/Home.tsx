@@ -144,11 +144,29 @@ const Home = () => {
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-medium text-orange-600">
-                                                    {item.status ===
-                                                    "expiring-today"
-                                                        ? "Today"
-                                                        : "Soon"}
+                                                <p
+                                                    className={`text-sm font-medium ${
+                                                        {
+                                                            fresh: "text-green-600",
+                                                            "expiring-soon":
+                                                                "text-orange-600",
+                                                            "expiring-today":
+                                                                "text-orange-600",
+                                                            expired:
+                                                                "text-red-600",
+                                                        }[item.status]
+                                                    }`}
+                                                >
+                                                    {
+                                                        {
+                                                            fresh: "Fresh",
+                                                            "expiring-soon":
+                                                                "Soon",
+                                                            "expiring-today":
+                                                                "Today",
+                                                            expired: "Expired",
+                                                        }[item.status]
+                                                    }
                                                 </p>
                                                 <p className="text-xs text-gray-500">
                                                     {new Date(
