@@ -1,6 +1,6 @@
 # PantryPal Web
 
-**PantryPal Web** is a mobile-responsive web application built with React, TypeScript, and Vite. It connects to the [PantryPal Backend](https://github.com/twhjames/pantrypal-backend) to serve as a smart pantry assistant — helping users manage groceries, track expiry dates, and receive personalized recipe suggestions.
+**PantryPal Web** is a mobile-responsive web application built with React, TypeScript, and Vite. It connects to the [PantryPal Backend](https://github.com/twhjames/pantrypal-backend) to serve as a smart pantry assistant — helping users manage groceries, predict expiry dates, scan receipts, chat about recipes, and receive personalized meal suggestions.
 
 ---
 
@@ -8,6 +8,8 @@
 
 -   [🛠️ Tech Stack](#️-tech-stack)
 -   [📱 Features](#-features)
+-   [🛰 Backend API](#-backend-api)
+-   [🌐 Documentation](#-documentation)
 -   [🚀 Getting Started](#-getting-started)
 -   [📂 Project Structure](#-project-structure)
 -   [⚙️ Environment Variables](#️-environment-variables)
@@ -34,7 +36,25 @@
 -   Pantry inventory management
 -   Recipe suggestions based on expiry and availability
 -   Chat assistant (integrated with backend)
+-   Account management with JWT authentication
+-   Receipt scanning via the backend pipeline
 -   Clean, accessible UI with shadcn/ui components
+
+---
+
+## 🛰 Backend API
+
+This web app communicates with the [PantryPal Backend](https://github.com/twhjames/pantrypal-backend),
+which exposes RESTful endpoints for pantry management, account services, recipe
+recommendations, receipt processing, and a conversational chatbot powered by
+LLaMA via the Groq API. Refer to the backend repository for a detailed
+architecture overview and API documentation.
+
+---
+
+## 🌐 Documentation
+
+Read the full **User Guide** and **Developer Guide** on our [GitHub Pages site](https://twhjames.github.io/pantrypal-web-react/).
 
 ---
 
