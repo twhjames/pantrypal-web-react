@@ -238,6 +238,9 @@ const Pantry = () => {
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
         const file = e.target.files?.[0];
+        // allow re-selecting the same file later
+        e.target.value = "";
+
         if (!file || !userId) return;
         // TODO: Request a presigned URL from the backend and upload the receipt when we change cloud infra
         try {
@@ -266,6 +269,15 @@ const Pantry = () => {
                         clearInterval(interval);
                         await fetchPantryItems();
                         setIsProcessing(false);
+                        setIsAddModalOpen(false);
+                        setEditingItem(null);
+                        setItemForm({
+                            name: "",
+                            category: "",
+                            quantity: 1,
+                            purchaseDate: "",
+                            expiryDate: "",
+                        });
                         return;
                     }
 
@@ -273,6 +285,15 @@ const Pantry = () => {
                         clearInterval(interval);
                         await fetchPantryItems();
                         setIsProcessing(false);
+                        setIsAddModalOpen(false);
+                        setEditingItem(null);
+                        setItemForm({
+                            name: "",
+                            category: "",
+                            quantity: 1,
+                            purchaseDate: "",
+                            expiryDate: "",
+                        });
                         toast({
                             title: "Pending",
                             description:
@@ -282,6 +303,15 @@ const Pantry = () => {
                 } catch (err) {
                     clearInterval(interval);
                     setIsProcessing(false);
+                    setIsAddModalOpen(false);
+                    setEditingItem(null);
+                    setItemForm({
+                        name: "",
+                        category: "",
+                        quantity: 1,
+                        purchaseDate: "",
+                        expiryDate: "",
+                    });
                     console.error("Failed to process receipt:", err);
                     toast({
                         title: "Error",
@@ -292,6 +322,16 @@ const Pantry = () => {
             }, 2000);
         } catch (error) {
             console.error("Failed to upload receipt:", error);
+            setIsProcessing(false);
+            setIsAddModalOpen(false);
+            setEditingItem(null);
+            setItemForm({
+                name: "",
+                category: "",
+                quantity: 1,
+                purchaseDate: "",
+                expiryDate: "",
+            });
             toast({
                 title: "Error",
                 description: "Failed to upload receipt",
@@ -381,6 +421,7 @@ const Pantry = () => {
                 <Dialog
                     open={isAddModalOpen}
                     onOpenChange={(open) => {
+                        if (isProcessing) return;
                         setIsAddModalOpen(open);
                         if (!open) {
                             setEditingItem(null);
