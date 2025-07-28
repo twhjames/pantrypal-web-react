@@ -54,7 +54,7 @@ architecture overview and API documentation.
 
 ## 🌐 Documentation
 
-Read the full **User Guide** and **Developer Guide** on our [GitHub Pages site](https://twhjames.github.io/pantrypal-web-react/).
+Read the full **User Guide** and **Developer Guide** on our [GitHub Pages site](https://twhjames.github.io/pantrypal-web-app/).
 
 ---
 
