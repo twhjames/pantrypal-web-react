@@ -7,6 +7,8 @@ import { Label } from '@/components/UI/label';
 import { Textarea } from '@/components/UI/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
 import { Mail, MessageSquare, Phone, MapPin, Send } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/UI/accordion';
+import Footer from '@/components/Layout/Footer';
 import { toast } from '@/hooks/use-toast';
 
 const Contact = () => {
@@ -49,6 +51,7 @@ const Contact = () => {
             </Link>
             <nav className="hidden md:flex space-x-8">
               <Link to="/overview" className="text-gray-600 hover:text-green-600">Features</Link>
+              <Link to="/pricing" className="text-gray-600 font-medium">Pricing</Link>
               <Link to="/team" className="text-gray-600 hover:text-green-600">Team</Link>
               <Link to="/contact" className="text-green-600 font-medium">Contact</Link>
             </nav>
@@ -85,9 +88,9 @@ const Contact = () => {
       {/* Contact Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Contact Form */}
-            <Card>
+            <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <MessageSquare className="w-5 h-5 mr-2 text-green-600" />
@@ -155,90 +158,60 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            {/* Contact Information */}
+            {/* Contact Information and FAQ */}
             <div className="space-y-8">
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Mail className="w-5 h-5 mr-2 text-green-600" />
-                    Email Support
-                  </CardTitle>
+                  <CardTitle>Contact Information</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    For general inquiries and support questions.
-                  </p>
-                  <p className="font-medium text-green-600">hello@pantrypal.com</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    We typically respond within 24 hours
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Phone className="w-5 h-5 mr-2 text-green-600" />
-                    Phone Support
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    For urgent technical support and account issues.
-                  </p>
-                  <p className="font-medium text-green-600">+1 (555) 123-4567</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Monday - Friday, 9AM - 6PM EST
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <MapPin className="w-5 h-5 mr-2 text-green-600" />
-                    Office Location
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    Visit us at our headquarters in the heart of Silicon Valley.
-                  </p>
-                  <div className="space-y-1">
-                    <p className="font-medium">PantryPal Inc.</p>
-                    <p className="text-gray-600">123 Innovation Drive</p>
-                    <p className="text-gray-600">San Francisco, CA 94105</p>
-                    <p className="text-gray-600">United States</p>
+                <CardContent className="space-y-6 text-gray-600">
+                  <div className="flex items-center">
+                    <Mail className="w-5 h-5 mr-3 text-green-600" />
+                    <span>hello@pantrypal.com</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-5 h-5 mr-3 text-green-600" />
+                    <span>+1 (555) 123-4567</span>
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-3 text-green-600" />
+                    <span>123 Innovation Drive, San Francisco, CA</span>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* FAQ Section */}
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle>Frequently Asked Questions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Is PantryPal free to use?</h4>
-                    <p className="text-gray-600 text-sm">Yes! PantryPal offers a free tier with core features for personal use.</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Will PantryPal help me save money?</h4>
-                    <p className="text-gray-600 text-sm">
-                      Yes — by avoiding duplicate buys, using food before it expires, and surfacing timely deals, most users spend less over time.
-                      </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Can I use PantryPal on my mobile device?</h4>
-                    <p className="text-gray-600 text-sm">Absolutely! PantryPal is fully responsive and works great on all devices.</p>
-                  </div>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>Is PantryPal free to use?</AccordionTrigger>
+                      <AccordionContent>
+                        Yes! PantryPal offers a free tier with core features for personal use.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Will PantryPal help me save money?</AccordionTrigger>
+                      <AccordionContent>
+                        Yes — by avoiding duplicate buys, using food before it expires, and surfacing timely deals, most users spend less over time.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-3">
+                      <AccordionTrigger>Can I use PantryPal on my mobile device?</AccordionTrigger>
+                      <AccordionContent>
+                        Absolutely! PantryPal is fully responsive and works great on all devices.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

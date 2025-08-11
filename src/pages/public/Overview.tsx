@@ -1,9 +1,10 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
-import { Package, ChefHat, Clock, Tag, ArrowRight, Check, Smartphone, Shield, Users, Camera, MessageCircle, Receipt, Brain, Zap, Globe } from 'lucide-react';
+import { Package, Clock, Tag, ArrowRight, Check, Smartphone, Shield, Camera, MessageCircle, Receipt, Brain, Zap, Globe } from 'lucide-react';
 // import aiRecipesHero from '@/assets/ai-recipes-hero.jpg';
+import Footer from '@/components/Layout/Footer';
+
 
 const Overview = () => {
   return (
@@ -20,6 +21,7 @@ const Overview = () => {
             </Link>
             <nav className="hidden md:flex space-x-8">
               <Link to="/overview" className="text-green-600 font-medium">Features</Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-green-600">Pricing</Link>
               <Link to="/team" className="text-gray-600 hover:text-green-600">Team</Link>
               <Link to="/contact" className="text-gray-600 hover:text-green-600">Contact</Link>
             </nav>
@@ -62,11 +64,18 @@ const Overview = () => {
               </div>
             </div>
             <div className="relative">
-              {/* <img 
+              <div className="w-full h-80 bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl shadow-2xl flex items-center justify-center">
+                {/* <img 
                 src={aiRecipesHero} 
                 alt="AI-powered recipe suggestions with fresh ingredients"
-                className="w-full h-auto rounded-2xl shadow-2xl"
+                className="w-full h-auto rounded-2xl shadow-2xl hover:scale-105 transition-transform duration-300"
               /> */}
+                <div className="text-center text-gray-600">
+                  <Brain className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                  <p className="text-lg font-medium">AI Recipe Assistant</p>
+                  <p className="text-sm">Powered by LLaMA AI Technology</p>
+                </div>
+              </div>
               <div className="absolute -top-4 -right-4 bg-green-100 p-3 rounded-full">
                 <Brain className="w-8 h-8 text-green-600" />
               </div>
@@ -81,10 +90,12 @@ const Overview = () => {
           {/* Receipt Scanning Feature */}
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                <Camera className="w-8 h-8 text-blue-600" />
+              <div className="flex items-center mb-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                  <Camera className="w-8 h-8 text-blue-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Instant Receipt Scanning</h2>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Instant Receipt Scanning</h2>
               <p className="text-gray-600 mb-6">
                 Snap a photo and let OCR add items to your pantry automatically — 
                 <span className="font-medium">save time, avoid duplicate purchases</span>, and keep an accurate inventory.
@@ -133,10 +144,12 @@ const Overview = () => {
           {/* Smart Pantry Tracking */}
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div className="lg:order-2">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                <Package className="w-8 h-8 text-green-600" />
+              <div className="flex items-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                  <Package className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Intelligent Pantry Management</h2>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Intelligent Pantry Management</h2>
               <p className="text-gray-600 mb-6">
                 Keep track of everything with quantity monitoring and smart expiry predictions — 
                 <span className="font-medium">use food on time</span> and <span className="font-medium">spend less</span>.
@@ -192,10 +205,12 @@ const Overview = () => {
           {/* AI Recipe Chat */}
           <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
             <div>
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
-                <MessageCircle className="w-8 h-8 text-purple-600" />
+             <div className="flex items-center mb-4">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                  <MessageCircle className="w-8 h-8 text-purple-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">LLaMA-Powered Recipe Chat</h2>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">LLaMA-Powered Recipe Chat</h2>
               <p className="text-gray-600 mb-6">
                 Pantry-aware recipes that prioritize soon-to-expire items — 
                 <span className="font-medium">cut waste</span>, simplify meal planning, and cook confidently.
@@ -239,13 +254,15 @@ const Overview = () => {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                <Tag className="w-8 h-8 text-green-600" />
+            <div className="lg:order-2">
+              <div className="flex items-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                  <Tag className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Flash Deals from Partner Supermarkets</h2>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Flash Deals from Partner Supermarkets</h2>
               <p className="text-gray-600 mb-6">
-                Get timely, personalized offers directly from partnered supermarkets — prioritizing 
+                Get timely, personalized offers directly from partnered supermarkets — prioritizing
                 <span className="font-medium"> short-dated/expiring groceries at lower costs</span>, plus other relevant discounts.
               </p>
               <ul className="space-y-3">
@@ -263,7 +280,7 @@ const Overview = () => {
                 </li>
               </ul>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-lg">
+            <div className="lg:order-1 bg-white p-8 rounded-lg shadow-lg">
               <div className="text-2xl mb-4">💰 Best Deals</div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
@@ -395,6 +412,7 @@ const Overview = () => {
           </Link>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

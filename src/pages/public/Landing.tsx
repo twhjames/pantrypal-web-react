@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
-import { ChefHat, Package, Clock, Tag, ArrowRight, Check, Camera, MessageCircle, Receipt, Smartphone, Brain, ShieldCheck } from 'lucide-react';
+import { Package, Clock, Tag, ArrowRight, Check, Camera, MessageCircle, Receipt, Smartphone, Brain, ShieldCheck } from 'lucide-react';
+import Footer from '@/components/Layout/Footer';
 // import pantryAppDemo from '@/assets/pantry-app-demo.jpg';
 
 const Landing = () => {
@@ -19,6 +20,7 @@ const Landing = () => {
             </div>
             <nav className="hidden md:flex space-x-8">
               <Link to="/overview" className="text-gray-600 hover:text-green-600">Features</Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-green-600">Pricing</Link>
               <Link to="/team" className="text-gray-600 hover:text-green-600">Team</Link>
               <Link to="/contact" className="text-gray-600 hover:text-green-600">Contact</Link>
             </nav>
@@ -44,53 +46,61 @@ const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl font-bold text-gray-900 mb-6">
-                Your AI-Powered <span className="text-green-600">Smart Pantry</span> Assistant
+                Eat Well. Pay Less. <span className="text-green-600">Waste Less.</span>
               </h1>
+             
               <p className="text-xl text-gray-600 mb-8">
-                One-stop platform place to <span className="font-medium">track your pantry</span>, 
-                <span className="font-medium"> cook from what you have</span>, and 
-                <span className="font-medium"> catch deals in time</span> — so you spend less and waste less.
+                Save thousands on groceries while saving good food from going to waste. 
+                Your AI-powered pantry assistant tracks expiry dates, suggests recipes, and finds you the best deals.
               </p>
               <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link to="/register">
                   <Button size="lg" className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
-                    Start Your Journey Free
+                    Get Started
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link to="/overview">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                    See Features
+                    See How It Works
                   </Button>
                 </Link>
               </div>
               <div className="mt-8 flex items-center justify-center lg:justify-start space-x-6 text-sm text-gray-600">
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-600 mr-2" />
-                  Free to start
+                  100% Free to use
                 </div>
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-600 mr-2" />
-                  No credit card
+                  Save up to 40% on groceries
                 </div>
                 <div className="flex items-center">
                   <Check className="w-4 h-4 text-green-600 mr-2" />
-                  AI-powered
+                  Reduce food waste
                 </div>
               </div>
             </div>
+
             <div className="relative">
               <div className="bg-white p-4 rounded-2xl shadow-2xl">
-                {/* <img 
+                <div className="w-full h-80 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg flex items-center justify-center">
+                  {/* <img 
                   src={pantryAppDemo} 
                   alt="PantryPal mobile app demo showing smart pantry tracking interface"
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-lg hover:scale-105 transition-transform duration-300"
                 /> */}
+                  <div className="text-center text-gray-600">
+                    <Smartphone className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                    <p className="text-lg font-medium">PantryPal App Demo</p>
+                    <p className="text-sm">Smart Pantry Tracking Interface</p>
+                  </div>
+                </div>
               </div>
-              <div className="absolute -top-4 -right-4 bg-green-100 p-3 rounded-full">
+              <div className="absolute -top-4 -right-4 bg-green-100 p-3 rounded-full animate-bounce">
                 <Brain className="w-8 h-8 text-green-600" />
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-blue-100 p-3 rounded-full">
+              <div className="absolute -bottom-4 -left-4 bg-blue-100 p-3 rounded-full animate-bounce [animation-delay:200ms]">
                 <Smartphone className="w-8 h-8 text-blue-600" />
               </div>
             </div>
@@ -103,10 +113,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Revolutionary Kitchen Intelligence
+              Turn Groceries into Savings, Not Waste
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience the future of kitchen management with AI-powered features that save time, reduce waste, and transform how you cook.
+              Join thousands of families saving money on groceries while keeping good food from going to waste.
             </p>
           </div>
           
@@ -245,25 +255,28 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Impact Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-green-600 mb-2">Up to 40%</div>
-              <div className="text-gray-600">Average Food Waste Reduction</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-600 mb-2">Save $500+/yr</div>
-              <div className="text-gray-600">Average Annual Savings</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-600 mb-2">10k+</div>
-              <div className="text-gray-600">AI Recipe Suggestions</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-green-600 mb-2">99%</div>
-              <div className="text-gray-600">OCR Accuracy Rate</div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-12">Making a real impact together</h2>
+            <div className="grid md:grid-cols-4 gap-8">
+              <div>
+                <div className="text-4xl font-bold text-green-600 mb-2">1M+</div>
+                <div className="text-gray-600">Pounds of food saved from waste</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-green-600 mb-2">$2M+</div>
+                <div className="text-gray-600">Saved by families like yours</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-green-600 mb-2">50K+</div>
+                <div className="text-gray-600">Happy families reducing waste</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-green-600 mb-2">40%</div>
+                <div className="text-gray-600">Average reduction in food waste</div>
+              </div>
             </div>
           </div>
         </div>
@@ -273,72 +286,30 @@ const Landing = () => {
       <section className="py-20 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Kitchen?
+            Start saving today. For free.
           </h2>
           <p className="text-green-100 mb-8 text-xl">
-            Join thousands of users who've already reduced food waste and discovered amazing recipes with AI-powered kitchen intelligence.
+            Discover discounts, prevent waste, and turn what's in your pantry into delicious meals — get started.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link to="/register">
               <Button size="lg" variant="secondary" className="bg-white text-green-600 hover:bg-gray-100 w-full sm:w-auto">
-                Start Free Trial
+                Start Saving Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/overview">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 w-full sm:w-auto">
-                Explore Features
+              <Button size="lg" variant="outline" className="border-white text-green-600 hover:bg-gray-100 hover:text-green-600 w-full sm:w-auto">
+                See How It Works
               </Button>
             </Link>
           </div>
           <p className="text-green-200 mt-6 text-sm">
-            No credit card required • Free forever plan available • Setup in under 2 minutes
+            100% Free • Setup in under 2 minutes • Save hundreds every year
           </p>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg">🥬</span>
-                </div>
-                <span className="ml-2 text-xl font-bold text-green-400">PantryPal</span>
-              </div>
-              <p className="text-gray-400">
-                Your smart pantry assistant for a waste-free kitchen.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/overview" className="hover:text-green-400">Features</Link></li>
-                <li><Link to="/login" className="hover:text-green-400">Sign In</Link></li>
-                <li><Link to="/register" className="hover:text-green-400">Get Started</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/team" className="hover:text-green-400">About Us</Link></li>
-                <li><Link to="/contact" className="hover:text-green-400">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Connect</h3>
-              <p className="text-gray-400">
-                Follow us for tips on reducing food waste and kitchen organization.
-              </p>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 PantryPal. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

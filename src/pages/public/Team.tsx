@@ -1,16 +1,15 @@
-
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent } from '@/components/UI/card';
 import { ArrowRight, Linkedin, Twitter, Github } from 'lucide-react';
+import Footer from '@/components/Layout/Footer';
 
 const Team = () => {
   const teamMembers = [
     {
       name: "Sarah Johnson",
       role: "Founder & CEO",
-      bio: "Former chef turned tech entrepreneur, leading PantryPal’s mission to help households save money and reduce food waste.",
+      bio: "Former chef turned tech entrepreneur, leading PantryPal's mission to help households save money and reduce food waste.",
       image: "👩‍🍳",
     },
     {
@@ -47,6 +46,7 @@ const Team = () => {
             </Link>
             <nav className="hidden md:flex space-x-8">
               <Link to="/overview" className="text-gray-600 hover:text-green-600">Features</Link>
+              <Link to="/pricing" className="text-gray-600 font-medium">Pricing</Link>
               <Link to="/team" className="text-green-600 font-medium">Team</Link>
               <Link to="/contact" className="text-gray-600 hover:text-green-600">Contact</Link>
             </nav>
@@ -85,7 +85,10 @@ const Team = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="text-center hover:shadow-lg transition-transform hover:-translate-y-1"
+              >
                 <CardContent className="p-8">
                   <div className="text-4xl mb-4">{member.image}</div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
@@ -156,6 +159,7 @@ const Team = () => {
           </Link>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
