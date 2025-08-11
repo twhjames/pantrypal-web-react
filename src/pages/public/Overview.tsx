@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
 import { Package, Clock, Tag, ArrowRight, Check, Smartphone, Shield, Camera, MessageCircle, Receipt, Brain, Zap, Globe } from 'lucide-react';
-// import aiRecipesHero from '@/assets/ai-recipes-hero.jpg';
+import FeaturesHero from '@/assets/feature-hero.png';
+import PublicHeader from '@/components/Layout/PublicHeader';
 import Footer from '@/components/Layout/Footer';
 
 
@@ -10,36 +11,7 @@ const Overview = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">🥬</span>
-              </div>
-              <span className="ml-2 text-xl font-bold text-green-600">PantryPal</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/overview" className="text-green-600 font-medium">Features</Link>
-              <Link to="/pricing" className="text-gray-600 hover:text-green-600">Pricing</Link>
-              <Link to="/team" className="text-gray-600 hover:text-green-600">Team</Link>
-              <Link to="/contact" className="text-gray-600 hover:text-green-600">Contact</Link>
-            </nav>
-            <div className="flex space-x-4">
-              <Link to="/login">
-                <Button variant="ghost" className="text-green-600 hover:text-green-700">
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
@@ -63,23 +35,14 @@ const Overview = () => {
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="w-full h-80 bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl shadow-2xl flex items-center justify-center">
-                {/* <img 
-                src={aiRecipesHero} 
+            <div className="relative w-full h-96 rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src={FeaturesHero}
                 alt="AI-powered recipe suggestions with fresh ingredients"
-                className="w-full h-auto rounded-2xl shadow-2xl hover:scale-105 transition-transform duration-300"
-              /> */}
-                <div className="text-center text-gray-600">
-                  <Brain className="w-16 h-16 mx-auto mb-4 text-green-600" />
-                  <p className="text-lg font-medium">AI Recipe Assistant</p>
-                  <p className="text-sm">Powered by LLaMA AI Technology</p>
-                </div>
-              </div>
-              <div className="absolute -top-4 -right-4 bg-green-100 p-3 rounded-full">
-                <Brain className="w-8 h-8 text-green-600" />
-              </div>
+                className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
             </div>
+
           </div>
         </div>
       </section>

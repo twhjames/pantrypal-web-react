@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
@@ -8,8 +7,10 @@ import { Textarea } from '@/components/UI/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
 import { Mail, MessageSquare, Phone, MapPin, Send } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/UI/accordion';
+import PublicHeader from '@/components/Layout/PublicHeader';
 import Footer from '@/components/Layout/Footer';
 import { toast } from '@/hooks/use-toast';
+
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -40,36 +41,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">🥬</span>
-              </div>
-              <span className="ml-2 text-xl font-bold text-green-600">PantryPal</span>
-            </Link>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/overview" className="text-gray-600 hover:text-green-600">Features</Link>
-              <Link to="/pricing" className="text-gray-600 font-medium">Pricing</Link>
-              <Link to="/team" className="text-gray-600 hover:text-green-600">Team</Link>
-              <Link to="/contact" className="text-green-600 font-medium">Contact</Link>
-            </nav>
-            <div className="flex space-x-4">
-              <Link to="/login">
-                <Button variant="ghost" className="text-green-600 hover:text-green-700">
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
@@ -217,4 +189,3 @@ const Contact = () => {
 };
 
 export default Contact;
-
