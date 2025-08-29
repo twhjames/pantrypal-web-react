@@ -8,7 +8,6 @@ const navLinks = [
   { name: 'Features', path: '/overview' },
   { name: 'Pricing', path: '/pricing' },
   { name: 'Team', path: '/team' },
-  { name: 'Contact', path: '/contact' },
 ];
 
 const PublicHeader = () => {

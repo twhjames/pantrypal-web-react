@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent } from '@/components/UI/card';
-import { ArrowRight, Linkedin, Twitter, Github } from 'lucide-react';
+import { ArrowRight, Linkedin, Globe, Github } from 'lucide-react';
 import PublicHeader from '@/components/Layout/PublicHeader';
 import Footer from '@/components/Layout/Footer';
 
@@ -9,28 +9,29 @@ import Footer from '@/components/Layout/Footer';
 const Team = () => {
   const teamMembers = [
     {
-      name: "Sarah Johnson",
-      role: "Founder & CEO",
-      bio: "Former chef turned tech entrepreneur, leading PantryPal's mission to help households save money and reduce food waste.",
-      image: "👩‍🍳",
+      name: "James Teo",
+      role: "Principal Engineer & Co-Founder",
+      bio: "Leads system architecture and end-to-end engineering at PantryPal, developing and integrating the MLOps pipeline to cut food waste and personalize meals.",
+      image: "/team/james.jpeg",
+      linkedin: "https://www.linkedin.com/in/twhjames/",
+      website: "https://twhjames.dev/",
+      github: "https://github.com/twhjames",
     },
     {
-      name: "Mike Chen",
-      role: "CTO",
-      bio: "Full-stack CTO building a reliable, secure platform that powers real-time pantry tracking and AI recipes.",
-      image: "👨‍💻",
+      name: "Le Rui",
+      role: "Data Scientist & Co-Founder",
+      bio: "Drive R&D on PantryPal's ML and MLOps pipeline to power recipe intelligence that minimizes food waste and personalizes meals for every household.",
+      image: "/team/lerui.jpeg",
+      linkedin: "https://www.linkedin.com/in/le-rui-tay-7b6507272/",
+      github: "https://github.com/miyadainim",
     },
     {
-      name: "Emma Rodriguez",
-      role: "Head of Design",
-      bio: "Design lead crafting an intuitive, mobile-first experience so anyone can cook from what they have.",
-      image: "👩‍🎨",
-    },
-    {
-      name: "David Kim",
-      role: "AI Engineer",
-      bio: "AI engineer ensuring recipes are pantry-aware and prioritize soon-to-expire items to cut waste.",
-      image: "🤖",
+      name: "Ysabel Segram",
+      role: "Business Analyst & Co-Founder",
+      bio: "Turns customer insights into clear priorities, success metrics, and actionable roadmaps that guide PantryPal's product strategy and long-term vision.",
+      image: "/team/ysabel.jpeg",
+      linkedin: "https://www.linkedin.com/in/ysabel-segram-891809355/",
+      github: "https://github.com/whysabell",
     },
   ];
 
@@ -56,31 +57,64 @@ const Team = () => {
       {/* Team Members */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <Card
-                key={index}
-                className="text-center hover:shadow-lg transition-transform hover:-translate-y-1"
-              >
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {teamMembers.map((member, index) => (
+                <Card
+                  key={index}
+                  className="text-center hover:shadow-lg transition-transform hover:-translate-y-1"
+                >
                 <CardContent className="p-8">
-                  <div className="text-4xl mb-4">{member.image}</div>
+                  <img
+                    src={member.image}
+                    alt={`${member.name} headshot`}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                    className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border border-gray-200 shadow-sm bg-white"
+                  />
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
                   <p className="text-green-600 font-medium mb-4">{member.role}</p>
                   <p className="text-gray-600 mb-6">{member.bio}</p>
                   <div className="flex justify-center space-x-3">
-                    <button className="text-gray-400 hover:text-blue-600">
-                      <Linkedin className="w-5 h-5" />
-                    </button>
-                    <button className="text-gray-400 hover:text-blue-400">
-                      <Twitter className="w-5 h-5" />
-                    </button>
-                    <button className="text-gray-400 hover:text-gray-900">
-                      <Github className="w-5 h-5" />
-                    </button>
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${member.name} on LinkedIn`}
+                        className="text-gray-400 hover:text-blue-600"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </a>
+                    )}
+                    {member.website && (
+                      <a
+                        href={member.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${member.name} website`}
+                        className="text-gray-400 hover:text-gray-900"
+                      >
+                        <Globe className="w-5 h-5" />
+                      </a>
+                    )}
+                    {member.github && (
+                      <a
+                        href={member.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${member.name} on GitHub`}
+                        className="text-gray-400 hover:text-gray-900"
+                      >
+                        <Github className="w-5 h-5" />
+                      </a>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             ))}
+            </div>
           </div>
         </div>
       </section>
