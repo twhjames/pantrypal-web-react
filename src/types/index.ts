@@ -41,6 +41,7 @@ export interface ExpiringDeal {
         location: string;
     };
     category: string;
+    quantityLeft?: number; // TODO: populate from backend inventory
 }
 
 export interface ChatMessage {

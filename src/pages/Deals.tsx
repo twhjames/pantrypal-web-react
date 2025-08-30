@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
+import { ExpiringDeal } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Calendar, Tag, ExternalLink } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import type { ExpiringDeal } from "@/types";
+import { MapPin, Calendar, ShoppingCart } from "lucide-react";
+import PullToRefresh from "react-pull-to-refresh";
+import { toast } from "@/components/ui/use-toast";
+import { useCart } from "@/contexts/CartContext";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const Deals = () => {
     const [deals, setDeals] = useState<ExpiringDeal[]>([]);
@@ -20,6 +30,11 @@ const Deals = () => {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [sortBy, setSortBy] = useState("expiry");
     const [isLoading, setIsLoading] = useState(true);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedDeal, setSelectedDeal] = useState<ExpiringDeal | null>(null);
+    const [desiredQty, setDesiredQty] = useState<number>(1);
+
+    const { addToCart } = useCart();
 
     const categories = [
         "all",
@@ -50,7 +65,7 @@ const Deals = () => {
                     id: "1",
                     name: "Organic Milk 1L",
                     image: "/deals/milk.png",
-                    expiryDate: "2025-10-25",
+                    expiryDate: "2025-06-25",
                     originalPrice: 4.99,
                     discountedPrice: 2.49,
                     retailer: {
@@ -58,12 +73,13 @@ const Deals = () => {
                         location: "123 Main St, Downtown",
                     },
                     category: "dairy",
+                    quantityLeft: 7,
                 },
                 {
                     id: "2",
                     name: "Banana Bundle (6 pcs)",
                     image: "/deals/banana.png",
-                    expiryDate: "2025-10-24",
+                    expiryDate: "2025-06-24",
                     originalPrice: 3.99,
                     discountedPrice: 1.99,
                     retailer: {
@@ -71,12 +87,13 @@ const Deals = () => {
                         location: "456 Oak Ave, Uptown",
                     },
                     category: "fruits",
+                    quantityLeft: 12,
                 },
                 {
                     id: "3",
                     name: "Whole Wheat Bread",
                     image: "/deals/bread.png",
-                    expiryDate: "2025-10-26",
+                    expiryDate: "2025-06-26",
                     originalPrice: 2.99,
                     discountedPrice: 1.49,
                     retailer: {
@@ -84,12 +101,13 @@ const Deals = () => {
                         location: "789 Pine St, Midtown",
                     },
                     category: "bakery",
+                    quantityLeft: 3,
                 },
                 {
                     id: "4",
                     name: "Greek Yogurt 4-pack",
                     image: "/deals/yogurt.png",
-                    expiryDate: "2025-10-27",
+                    expiryDate: "2025-06-27",
                     originalPrice: 6.99,
                     discountedPrice: 3.99,
                     retailer: {
@@ -97,6 +115,7 @@ const Deals = () => {
                         location: "123 Main St, Downtown",
                     },
                     category: "dairy",
+                    quantityLeft: 0,
                 },
             ];
 
@@ -163,20 +182,22 @@ const Deals = () => {
         return diffDays;
     };
 
-    const handleViewOffer = (deal: ExpiringDeal) => {
-        // TODO: API Call to track deal click
-        console.log("API Call: POST /deals/track-click", { dealId: deal.id });
+    const handleAddToCart = (deal: ExpiringDeal, qty: number = 1) => {
+        // TODO: API Call to POST /cart/add
+        console.log("API Call: POST /cart/add", { dealId: deal.id, qty });
+        addToCart(deal, qty);
+    };
 
-        toast({
-            title: "Redirecting to Retailer",
-            description: `Opening ${deal.retailer.name} deal page...`,
-        });
+    const openDetails = (deal: ExpiringDeal) => {
+        setSelectedDeal(deal);
+        setDesiredQty(1);
+        setIsDialogOpen(true);
     };
 
     if (isLoading) {
         return (
             <AppLayout>
-                <div className="space-y-6 mx-auto">
+                <div className="p-6 max-w-7xl mx-auto">
                     <div className="animate-pulse">
                         <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -195,7 +216,7 @@ const Deals = () => {
 
     return (
         <AppLayout>
-            <div className="pt-2 space-y-6 mx-auto">
+            <div className="p-6 max-w-7xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">
                         Expiring Deals 🛒
@@ -240,124 +261,253 @@ const Deals = () => {
                     </Select>
                 </div>
 
-                {/* Deals Grid */}
-                {filteredDeals.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredDeals.map((deal) => {
-                            const discount = calculateDiscount(
-                                deal.originalPrice,
-                                deal.discountedPrice
-                            );
-                            const daysLeft = getDaysUntilExpiry(
-                                deal.expiryDate
-                            );
-
-                            return (
-                                <Card
-                                    key={deal.id}
-                                    className="hover:shadow-lg transition-shadow"
-                                >
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-start">
-                                            <CardTitle className="text-lg">
-                                                {deal.name}
-                                            </CardTitle>
-                                            <Badge
-                                                variant="destructive"
-                                                className="bg-red-100 text-red-700"
-                                            >
-                                                {discount}% OFF
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                                            <img
-                                                src={deal.image}
-                                                alt={deal.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <span className="text-2xl font-bold text-green-600">
-                                                        $
-                                                        {deal.discountedPrice.toFixed(
-                                                            2
-                                                        )}
-                                                    </span>
-                                                    <span className="text-sm text-gray-500 line-through ml-2">
-                                                        $
-                                                        {deal.originalPrice.toFixed(
-                                                            2
-                                                        )}
-                                                    </span>
-                                                </div>
+                <PullToRefresh
+                    onRefresh={async () => {
+                        // TODO: GET /deals/expiring (latest)
+                        await fetchExpiringDeals();
+                        toast({
+                            title: "Refreshed",
+                            description: "Latest deals loaded.",
+                        });
+                    }}
+                >
+                    {/* Deals Grid */}
+                    {filteredDeals.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredDeals.map((deal) => {
+                                const discount = calculateDiscount(
+                                    deal.originalPrice,
+                                    deal.discountedPrice
+                                );
+                                const daysLeft = getDaysUntilExpiry(
+                                    deal.expiryDate
+                                );
+                                const soldOut = (deal.quantityLeft ?? 0) <= 0;
+                                return (
+                                    <Card
+                                        key={deal.id}
+                                        className="hover:shadow-lg transition-shadow"
+                                    >
+                                        <CardHeader className="pb-2">
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-lg line-clamp-2 mr-2">
+                                                    {deal.name}
+                                                </CardTitle>
                                                 <Badge
-                                                    variant="outline"
-                                                    className="capitalize"
+                                                    variant="destructive"
+                                                    className="bg-red-100 text-red-700"
                                                 >
-                                                    {deal.category}
+                                                    {discount}% OFF
                                                 </Badge>
                                             </div>
-
-                                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                <Calendar size={16} />
-                                                <span>
-                                                    Expires{" "}
-                                                    {daysLeft === 0
-                                                        ? "today"
-                                                        : daysLeft === 1
-                                                        ? "tomorrow"
-                                                        : `in ${daysLeft} days`}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-start gap-2 text-sm text-gray-600">
-                                                <MapPin
-                                                    size={16}
-                                                    className="mt-0.5 flex-shrink-0"
-                                                />
-                                                <div>
-                                                    <div className="font-medium">
-                                                        {deal.retailer.name}
-                                                    </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <button
+                                                className="w-full"
+                                                onClick={() =>
+                                                    openDetails(deal)
+                                                }
+                                                aria-label={`View details of ${deal.name}`}
+                                            >
+                                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 flex items-center justify-center">
+                                                    <img
+                                                        src={deal.image}
+                                                        alt={deal.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                                                        }}
+                                                    />
+                                                </div>
+                                            </button>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
                                                     <div>
-                                                        {deal.retailer.location}
+                                                        <span className="text-2xl font-bold text-green-600">
+                                                            $
+                                                            {deal.discountedPrice.toFixed(
+                                                                2
+                                                            )}
+                                                        </span>
+                                                        <span className="text-sm text-gray-500 line-through ml-2">
+                                                            $
+                                                            {deal.originalPrice.toFixed(
+                                                                2
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="capitalize"
+                                                        >
+                                                            {deal.category}
+                                                        </Badge>
+                                                        <div
+                                                            className={`text-xs mt-1 ${
+                                                                soldOut
+                                                                    ? "text-red-600"
+                                                                    : "text-muted-foreground"
+                                                            }`}
+                                                        >
+                                                            {soldOut
+                                                                ? "Sold out"
+                                                                : `${
+                                                                      deal.quantityLeft ??
+                                                                      "—"
+                                                                  } left`}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <Calendar size={16} />
+                                                    <span>
+                                                        Expires{" "}
+                                                        {daysLeft === 0
+                                                            ? "today"
+                                                            : daysLeft === 1
+                                                            ? "tomorrow"
+                                                            : `in ${daysLeft} days`}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-start gap-2 text-sm text-gray-600">
+                                                    <MapPin
+                                                        size={16}
+                                                        className="mt-0.5 flex-shrink-0"
+                                                    />
+                                                    <div>
+                                                        <div className="font-medium">
+                                                            {deal.retailer.name}
+                                                        </div>
+                                                        <div>
+                                                            {
+                                                                deal.retailer
+                                                                    .location
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        onClick={() =>
+                                                            handleAddToCart(
+                                                                deal
+                                                            )
+                                                        }
+                                                        className="w-full"
+                                                        disabled={soldOut}
+                                                    >
+                                                        <ShoppingCart className="mr-2 h-4 w-4" />{" "}
+                                                        Add to cart
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            openDetails(deal)
+                                                        }
+                                                    >
+                                                        Details
+                                                    </Button>
+                                                </div>
                                             </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">🛒</div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                                No deals found
+                            </h3>
+                            <p className="text-gray-600">
+                                {categoryFilter !== "all"
+                                    ? "Try selecting a different category"
+                                    : "Check back later for new expiring deals"}
+                            </p>
+                        </div>
+                    )}
 
-                                            <Button
-                                                onClick={() =>
-                                                    handleViewOffer(deal)
-                                                }
-                                                className="w-full bg-green-600 hover:bg-green-700"
-                                            >
-                                                <ExternalLink className="mr-2 h-4 w-4" />
-                                                View Offer
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <div className="text-6xl mb-4">🛒</div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            No deals found
-                        </h3>
-                        <p className="text-gray-600">
-                            {categoryFilter !== "all"
-                                ? "Try selecting a different category"
-                                : "Check back later for new expiring deals"}
-                        </p>
-                    </div>
-                )}
+                    {/* Deal Details Modal */}
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{selectedDeal?.name}</DialogTitle>
+                                <DialogDescription>
+                                    {selectedDeal?.retailer.name} •{" "}
+                                    {selectedDeal?.retailer.location}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <span className="text-xl font-semibold">
+                                            $
+                                            {selectedDeal?.discountedPrice.toFixed(
+                                                2
+                                            )}
+                                        </span>
+                                        <span className="text-sm text-muted-foreground line-through ml-2">
+                                            $
+                                            {selectedDeal?.originalPrice.toFixed(
+                                                2
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {selectedDeal?.quantityLeft ?? "—"} left
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <label htmlFor="qty" className="text-sm">
+                                        Quantity
+                                    </label>
+                                    <input
+                                        id="qty"
+                                        type="number"
+                                        min={1}
+                                        max={
+                                            selectedDeal?.quantityLeft ??
+                                            undefined
+                                        }
+                                        value={desiredQty}
+                                        onChange={(e) =>
+                                            setDesiredQty(
+                                                Math.max(
+                                                    1,
+                                                    Number(e.target.value)
+                                                )
+                                            )
+                                        }
+                                        className="w-24 border rounded-md px-3 py-2"
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsDialogOpen(false)}
+                                >
+                                    Close
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        if (selectedDeal) {
+                                            handleAddToCart(
+                                                selectedDeal,
+                                                desiredQty
+                                            );
+                                            setIsDialogOpen(false);
+                                        }
+                                    }}
+                                >
+                                    Add to cart
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </PullToRefresh>
             </div>
         </AppLayout>
     );
